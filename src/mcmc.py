@@ -105,7 +105,7 @@ class HMC(MCMC):
             cahins : 'int' Integer number of independent chains.
             L : 'int' or 'float' Time length.
             epsilon : 'float' Integration step size.
-            hamiltonian_model : python class with method 'get_derivative' calculating the derivative w.r.t. the current state.
+            hamiltonian_model : python class with method 'get_gradient' calculating the derivative w.r.t. the current state.
             H_funtion : python callable which takes an arguments like "state" and returns the log-density at this state.
         """
         super().__init__(initial_state, num_samples, burnin=burnin, chains=chains)
@@ -127,7 +127,7 @@ class HMC(MCMC):
             Calculate the acceleration vector.
             """
             cur_state = tf.reshape(tf.convert_to_tensor(cur_state, dtype=tf.float32), [1,self.dim])
-            return -tf.reshape(self.hamiltonian_model.get_derivative(cur_state),[-1]).numpy()[0:self.dim//2]
+            return tf.reshape(self.hamiltonian_model.get_gradient(cur_state),[-1]).numpy()[self.dim//2:]
         return utils.leapfrog(get_acceleration, cur_state, self.L/self.num_lf, self.num_lf)[-1]
     
     def sample(self):

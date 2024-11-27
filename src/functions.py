@@ -12,7 +12,7 @@ def functions(dist_name):
     #******** 1D Gaussian Mixture #********
     if dist_name == '1D_Gauss_mix':
         def H_function(state):
-            q, p = np.split(state,2)
+            q, p = state[0], state[1]
             mu1 = 1.0
             mu2 = -1.0
             sigma = 0.35
@@ -23,7 +23,7 @@ def functions(dist_name):
     # #******** 2D Gaussian Four Mixtures #********
     elif dist_name == '2D_Gauss_mix':
         def H_function(state):
-            q1, q2, p1, p2 = np.split(state,4)
+            q1, q2, p1, p2 = state[0], state[1], state[2], state[3]
             sigma_inv = np.array([[1.,0.],[0.,1.]])
             term1 = 0.
             

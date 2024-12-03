@@ -3,6 +3,7 @@ import utils
 import pickle
 from functions import functions
 import scipy
+import os
 
 def get_dataset(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, input_dim=2, dist_name='1D_Gauss_mix', dt=0.25, num_lf=4, **kwargs):
     """
@@ -14,12 +15,17 @@ def get_dataset(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, 
         path : 'str' or None. If not None, load data from the path.
         num_samples : 'int' Number of total samples.
         per_train : 'float' Percentage of train dataset.
+        input_dim : 'int' Integer number of input dimension.
+        dist_name : 'str' The distribution name.
+        dt : 'float' The integration time step.
+        num_lf : 'int' Number of leapfrog step.
     """
 
     if load:
         with open(path, 'rb') as f:
             data = pickle.load(f)
         print("Successfully loaded data")
+        return data
     
     data = {'meta': locals()} # record all the augments.
     np.random.seed(seed)
@@ -46,4 +52,5 @@ def get_dataset(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, 
 
     with open(path, 'wb') as f:
         pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
-        
+    
+    return data

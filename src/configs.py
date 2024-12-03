@@ -1,0 +1,23 @@
+CONFIGS = {
+    "LHNN_1DGaussianmixture" : {
+        "seed" : 0,
+        "load" : True,
+        "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/1DGaussianmixture.obj",
+        "num_samples" : 20, 
+        "per_train" : 0.8, 
+        "input_dim" : 2,
+        "dist_name" : '1D_Gauss_mix',
+        "dt" : 0.05,
+        "num_lf" : 400,
+        "num_hidden": 100,
+        "num_layers": 3,
+        "output_dim": 2,
+        "acti" : "tanh",
+        "baseline" : False,
+        "field_type" : "solenoidal",
+        "separate_fields" : False,
+        "train_epoch" : 30,
+        "train_step" : 200,
+        "path_model" : "/home/ycui/Documents/TSRLproject_JPMorgan/models/1DGaussianmixture.keras",
+    },
+}

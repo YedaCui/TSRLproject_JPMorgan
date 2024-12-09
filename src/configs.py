@@ -1,7 +1,7 @@
 CONFIGS = {
     "LHNN_1DGaussianmixture" : {
         "seed" : 0,
-        "load" : False,
+        "load" : True,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/1DGaussianmixture.obj",
         "num_samples" : 20,
         "per_train" : 0.95,
@@ -22,7 +22,7 @@ CONFIGS = {
     },
     "LHNN_3DRosenbrock" : {
         "seed" : 0,
-        "load" : False,
+        "load" : True,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/3DRosenbrock.obj",
         "num_samples" : 40, 
         "per_train" : 0.95, 
@@ -43,7 +43,7 @@ CONFIGS = {
     },
     "HNN_3DRosenbrock" : {
         "seed" : 0,
-        "load" : False,
+        "load" : True,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/3DRosenbrock.obj",
         "num_samples" : 40, 
         "per_train" : 0.95, 
@@ -64,7 +64,7 @@ CONFIGS = {
     },
     "LHNN_3DRosenbrock_T100" : {
         "seed" : 0,
-        "load" : False,
+        "load" : True,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/3DRosenbrock_T100.obj",
         "num_samples" : 40, 
         "per_train" : 0.95, 
@@ -85,7 +85,7 @@ CONFIGS = {
     },
     "LHNN_3DRosenbrock_T150" : {
         "seed" : 0,
-        "load" : False,
+        "load" : True,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/3DRosenbrock_T150.obj",
         "num_samples" : 40, 
         "per_train" : 0.95, 
@@ -106,7 +106,7 @@ CONFIGS = {
     },
     "LHNN_3DRosenbrock_T250" : {
         "seed" : 0,
-        "load" : False,
+        "load" : True,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/3DRosenbrock_T250.obj",
         "num_samples" : 40, 
         "per_train" : 0.95, 
@@ -127,7 +127,7 @@ CONFIGS = {
     },
     "LHNN_2DNealsfunnel" : {
         "seed" : 0,
-        "load" : False,
+        "load" : True,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/2DNealsfunnel.obj",
         "num_samples" : 40, 
         "per_train" : 0.95, 
@@ -148,7 +148,7 @@ CONFIGS = {
     },
     "LHNN_5DillconditionedGaussian" : {
         "seed" : 0,
-        "load" : False,
+        "load" : True,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/5DillconditionedGaussian.obj",
         "num_samples" : 40, 
         "per_train" : 0.95, 
@@ -169,7 +169,7 @@ CONFIGS = {
     },
     "LHNN_10DRosenbrock" : {
         "seed" : 0,
-        "load" : False,
+        "load" : True,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/10DRosenbrock.obj",
         "num_samples" : 40, 
         "per_train" : 0.95, 

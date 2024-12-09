@@ -39,7 +39,7 @@ if __name__ == "__main__":
     gpus = tf.config.experimental.list_physical_devices('GPU')
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
-    tf.config.set_visible_devices(gpus[0], "GPU")
+    tf.config.set_visible_devices(gpus[1], "GPU")
 
     # sampler = sampling(config_name="LHNN_1DGaussianmixture", sampler_type="HMC", initial_state=np.array([0]), num_samples=5000, burnin=1000, chains=1, epsilon=0.05, 
     #          model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_1DGaussianmixture_sin.weights.h5", L=5)
@@ -49,17 +49,17 @@ if __name__ == "__main__":
     #          model_path=None, L=5)
     # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_hmc_LHNN_1DGaussianmixture.pkl"
 
-    sampler = sampling(config_name="LHNN_1DGaussianmixture", sampler_type="NUTS", initial_state=np.array([0]), num_samples=5000, burnin=1000, chains=1, epsilon=0.05, 
-             model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_1DGaussianmixture_sin.weights.h5", threshold_nn=1000, threshold_lf=1000, online_error_monitor=False) # without online error monitoring.
-    sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/lhnn_nuts_LHNN_1DGaussianmixture.pkl"
+    # sampler = sampling(config_name="LHNN_1DGaussianmixture", sampler_type="NUTS", initial_state=np.array([0]), num_samples=5000, burnin=1000, chains=1, epsilon=0.05, 
+    #          model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_1DGaussianmixture_sin.weights.h5", threshold_nn=1000, threshold_lf=1000, online_error_monitor=False) # without online error monitoring.
+    # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/lhnn_nuts_LHNN_1DGaussianmixture.pkl"
 
     # sampler = sampling(config_name="LHNN_1DGaussianmixture", sampler_type="NUTS", initial_state=np.array([0]), num_samples=5000, burnin=1000, chains=1, epsilon=0.05, 
     #          model_path=None, threshold_nn=np.inf, threshold_lf=1000)
     # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_nuts_LHNN_1DGaussianmixture.pkl"
     
     # sampler = sampling(config_name="LHNN_3DRosenbrock", sampler_type="NUTS", initial_state=np.array([0,0,0]), num_samples=5000, burnin=1000, chains=1, epsilon=0.025, 
-    #          model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_3DRosenbrock_sin.weights.h5", threshold_nn=100, threshold_lf=1000, online_error_monitor=False) # without online error monitoring.
-    # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/lhnn_nuts_3Drb_notoem_100.pkl"
+    #          model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_3DRosenbrock_sin.weights.h5", threshold_nn=1000, threshold_lf=1000, online_error_monitor=False) # without online error monitoring.
+    # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/lhnn_nuts_3Drb_notoem_1000.pkl"
 
     # sampler = sampling(config_name="LHNN_3DRosenbrock", sampler_type="NUTS", initial_state=np.array([0,0,0]), num_samples=35000, burnin=1000, chains=1, epsilon=0.025, 
     #          model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_3DRosenbrock_sin.weights.h5", threshold_nn=10, num_lf=20, threshold_lf=1000) # with online error monitoring.
@@ -69,9 +69,9 @@ if __name__ == "__main__":
     #          model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/HNN_3DRosenbrock_sin.weights.h5", threshold_nn=10, num_lf=20, threshold_lf=1000) # with online error monitoring.
     # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/hnn_nuts_3Drb.pkl"
 
-    # sampler = sampling(config_name="LHNN_3DRosenbrock_T150", sampler_type="NUTS", initial_state=np.array([0,0,0]), num_samples=125000, burnin=5000, chains=1, epsilon=0.025, 
-    #          model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_3DRosenbrock_T150_sin.weights.h5", threshold_nn=10, num_lf=20, threshold_lf=1000) # with online error monitoring.
-    # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/lhnn_nuts_3Drb_T150.pkl"
+    # sampler = sampling(config_name="LHNN_3DRosenbrock_T250", sampler_type="NUTS", initial_state=np.array([0,0,0]), num_samples=125000, burnin=5000, chains=1, epsilon=0.025, 
+    #          model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_3DRosenbrock_T250_sin.weights.h5", threshold_nn=10, num_lf=20, threshold_lf=1000) # with online error monitoring.
+    # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/lhnn_nuts_3Drb_T250.pkl"
 
     # sampler = sampling(config_name="LHNN_3DRosenbrock", sampler_type="NUTS", initial_state=np.array([0,0,0]), num_samples=125000, burnin=5000, chains=1, epsilon=0.025, 
     #          model_path=None, threshold_lf=1000) # the traditioinal nuts.
@@ -101,13 +101,21 @@ if __name__ == "__main__":
     #          model_path=None, threshold_nn=10, num_lf=20, threshold_lf=1000) # traditional nuts.
     # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_nuts_5DillG.pkl"
 
+    # sampler = sampling(config_name="LHNN_AllenCahn", sampler_type="NUTS", initial_state=np.array([0]*25), num_samples=5000, burnin=1000, chains=1, epsilon=0.025, 
+    #          model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_AllenCahn_sin.weights.h5", threshold_nn=10, num_lf=20, threshold_lf=1000) # traditional nuts.
+    # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_nuts_ac.pkl"
+
+    # sampler = sampling(config_name="LHNN_AllenCahn", sampler_type="NUTS", initial_state=np.array([0]*25), num_samples=5000, burnin=1000, chains=1, epsilon=0.025, 
+    #          model_path=None, threshold_nn=10, num_lf=20, threshold_lf=1000) # traditional nuts.
+    # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_nuts_ac.pkl"
+
     # sampler = sampling(config_name="LHNN_ellipticpde", sampler_type="NUTS", initial_state=np.array([0]*50), num_samples=5000, burnin=1000, chains=1, epsilon=0.025, 
     #          model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_ellipticpde_sin.weights.h5", threshold_nn=10, num_lf=20, threshold_lf=1000) # traditional nuts.
     # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_nuts_ellipticpde.pkl"
 
-    # sampler = sampling(config_name="LHNN_ellipticpde", sampler_type="NUTS", initial_state=np.array([0]*50), num_samples=5000, burnin=1000, chains=1, epsilon=0.025, 
-    #          model_path=None, threshold_nn=10, num_lf=20, threshold_lf=1000) # traditional nuts.
-    # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_nuts_ellipticpde.pkl"
+    sampler = sampling(config_name="LHNN_ellipticpde", sampler_type="NUTS", initial_state=np.array([0]*50), num_samples=5000, burnin=1000, chains=1, epsilon=0.025, 
+             model_path=None, threshold_nn=10, num_lf=20, threshold_lf=1000) # traditional nuts.
+    sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_nuts_ellipticpde.pkl"
 
     # Save the samples
     data_samples = {

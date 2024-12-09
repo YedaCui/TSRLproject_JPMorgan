@@ -22,13 +22,11 @@ def train(config):
     train_timegrads = tf.convert_to_tensor(data['train_timegrads'], dtype=tf.float32)
     test_timegrads = tf.convert_to_tensor(data['test_timegrads'], dtype=tf.float32)
 
-    # nn = hnn.MLP(config["input_dim"], config["num_hidden"], config["num_layers"], config["output_dim"], config["acti"])
-    # model = hnn.HNN(config["input_dim"], nn, baseline=config["baseline"], field_type=config["field_type"])
-
     model = hnn.HNN(config["input_dim"], config["num_hidden"], config["num_layers"], config["output_dim"], acti=config["acti"], baseline=config["baseline"], field_type=config["field_type"])
+    model.load_weights(config["path_model"])
     
     loss_obj = tf.keras.losses.MeanSquaredError()
-    optimizer = tf.keras.optimizers.Adam()
+    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
     
     @tf.function
     def train_step(x,y):
@@ -64,14 +62,15 @@ if __name__ == "__main__":
     gpus = tf.config.experimental.list_physical_devices('GPU')
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
-    tf.config.set_visible_devices(gpus[2], "GPU")
+    tf.config.set_visible_devices(gpus[1], "GPU")
 
     # config = CONFIGS["LHNN_1DGaussianmixture"] # load the config which records all experiment parameters.
-    # config = CONFIGS["LHNN_3DRosenbrock"]
-    # config = CONFIGS["LHNN_3DRosenbrock_T250"]
+    config = CONFIGS["LHNN_3DRosenbrock"]
+    # config = CONFIGS["LHNN_3DRosenbrock_T100"]
+    # config = CONFIGS["LHNN_10DRosenbrock"]
     # config = CONFIGS["LHNN_2DNealsfunnel"]
     
-    config = CONFIGS["LHNN_ellipticpde"]
+    # config = CONFIGS["LHNN_ellipticpde"]
     # data = gene_data.get_dataset(**config)
     # print("Finished generating the dataset.")
     model = train(config)

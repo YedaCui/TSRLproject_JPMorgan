@@ -25,7 +25,7 @@ def functions(dist_name):
         def H_function(state):
             dim = len(state)//2
             q, p = state[0:dim], state[dim:]
-            term1 = tf.reduce_sum( (100 * (q[1:] - q[:-1]**2)**2 + (1 - q[:-1])**2) / 20)
+            term1 = tf.reduce_sum((100 * (q[1:] - q[:-1]**2)**2 + (1 - q[:-1])**2) / 20)
             term2 = tf.reduce_sum(p**2/2)
             H = term1 + term2
             return H

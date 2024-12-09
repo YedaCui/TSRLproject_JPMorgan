@@ -22,7 +22,7 @@ CONFIGS = {
     },
     "LHNN_3DRosenbrock" : {
         "seed" : 0,
-        "load" : True,
+        "load" : False,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/3DRosenbrock.obj",
         "num_samples" : 40, 
         "per_train" : 0.95, 
@@ -43,7 +43,7 @@ CONFIGS = {
     },
     "HNN_3DRosenbrock" : {
         "seed" : 0,
-        "load" : True,
+        "load" : False,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/3DRosenbrock.obj",
         "num_samples" : 40, 
         "per_train" : 0.95, 
@@ -85,7 +85,7 @@ CONFIGS = {
     },
     "LHNN_3DRosenbrock_T150" : {
         "seed" : 0,
-        "load" : True,
+        "load" : False,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/3DRosenbrock_T150.obj",
         "num_samples" : 40, 
         "per_train" : 0.95, 

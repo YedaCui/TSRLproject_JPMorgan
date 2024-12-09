@@ -34,6 +34,7 @@ def get_dataset(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, 
 
     timegrad_fn = utils.get_timegrad_fn(functions(dist_name)) # Get the timegrad function based on the distribution name.
     for idx_sample in range(num_samples):
+        print(f"Begin to generate the {idx_sample}th sample.")
         for idx_dim in range(input_dim//2, input_dim):
             initial_state[idx_dim] = scipy.stats.norm(0,1).rvs() # initialize the momentum.
         state, timegrad, _ = utils.get_trajectory(timegrad_fn, initial_state, dt, num_lf)

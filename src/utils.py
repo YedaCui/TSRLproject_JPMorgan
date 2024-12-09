@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+from scipy.interpolate import RegularGridInterpolator
 
 def leapfrog(get_acceleration, initial_state, dt, num_lf):
     """
@@ -17,6 +18,7 @@ def leapfrog(get_acceleration, initial_state, dt, num_lf):
     anew = get_acceleration(initial_state) # Initialize the acceleration.
     for idx_step in range(1, num_lf+1):
         aold = anew
+        
         states[idx_step,0:dim//2] = states[idx_step-1,0:dim//2] + dt * states[idx_step-1,dim//2:] + 0.5 * dt**2 * aold # Update the postion.
         anew = get_acceleration(states[idx_step,:]) # Update the acceleration.
         states[idx_step,dim//2:] = states[idx_step-1,dim//2:] + 0.5 * dt * (aold + anew) # Update the momentum.
@@ -81,3 +83,29 @@ def get_trajectory(timegrad_fn, initial_state, dt, num_lf, require_grads=True):
     else:
         return states, t_eval
 
+def get_pdesensor(num=50,seed=0):
+    """
+    Get the sensor in the 2D elliptic pde experiments in Dhulipala et al 2022.
+
+    Args:
+        num : 'int' the integer number of the sensor.
+    """
+    np.random.seed(seed)
+    return np.random.uniform(size=(num,2), low=0, high=3)
+
+def get_pdef(seed=0):
+    """
+    Get the f function values with corruption at the 50 sensors in the 2D elliptic pde experiments in Dhulipala et al 2022.
+    """
+    np.random.seed(seed)
+    x, y = np.linspace(0, 3, 301), np.linspace(0, 3, 301)
+    xg, yg = np.meshgrid(x,y, indexing='ij', sparse=True)
+    fg = 2 * np.cos(2*xg) - (xg + yg) * 4 * np.sin(2*xg) + 2 * np.cos(2*yg) - (xg + yg) * 4 * np.sin(2*yg)
+    fg = fg + np.random.normal(size=fg.shape)
+    
+    sensor = get_pdesensor(seed=seed)
+    fval = RegularGridInterpolator((x,y), fg)(sensor)
+    return fval, (x,y, fg)
+
+# def get
+    

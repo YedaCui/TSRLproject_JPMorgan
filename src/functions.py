@@ -1,4 +1,5 @@
 import tensorflow as tf
+import utils
 
 
 def functions(dist_name):
@@ -19,38 +20,54 @@ def functions(dist_name):
             term1 = -tf.math.log(0.5*(tf.math.exp(-(q-mu1)**2/(2*sigma**2)))+0.5*(tf.math.exp(-(q-mu2)**2/(2*sigma**2))))
             H = term1 + p**2/2 # Normal PDF
             return H
-
-    # #******** 2D Gaussian Four Mixtures #********
-    # elif dist_name == '2D_Gauss_mix':
-    #     def H_function(state):
-    #         q1, q2, p1, p2 = state[0], state[1], state[2], state[3]
-    #         sigma_inv = np.array([[1.,0.],[0.,1.]])
-    #         term1 = 0.
-            
-    #         mu = np.array([3.,0.])
-    #         y = np.array([q1-mu[0],q2-mu[1]])
-    #         tmp1 = np.array([sigma_inv[0,0]*y[0]+sigma_inv[0,1]*y[1],sigma_inv[1,0]*y[0]+sigma_inv[1,1]*y[1]]).reshape(2)
-    #         term1 = term1 + 0.25*np.exp(-y[0]*tmp1[0] - y[1]*tmp1[1])
-            
-    #         mu = np.array([-3.,0.])
-    #         y = np.array([q1-mu[0],q2-mu[1]])
-    #         tmp1 = np.array([sigma_inv[0,0]*y[0]+sigma_inv[0,1]*y[1],sigma_inv[1,0]*y[0]+sigma_inv[1,1]*y[1]]).reshape(2)
-    #         term1 = term1 + 0.25*np.exp(-y[0]*tmp1[0] - y[1]*tmp1[1])
-            
-    #         mu = np.array([0.,3.])
-    #         y = np.array([q1-mu[0],q2-mu[1]])
-    #         tmp1 = np.array([sigma_inv[0,0]*y[0]+sigma_inv[0,1]*y[1],sigma_inv[1,0]*y[0]+sigma_inv[1,1]*y[1]]).reshape(2)
-    #         term1 = term1 + 0.25*np.exp(-y[0]*tmp1[0] - y[1]*tmp1[1])
-            
-    #         mu = np.array([0.,-3.])
-    #         y = np.array([q1-mu[0],q2-mu[1]])
-    #         tmp1 = np.array([sigma_inv[0,0]*y[0]+sigma_inv[0,1]*y[1],sigma_inv[1,0]*y[0]+sigma_inv[1,1]*y[1]]).reshape(2)
-    #         term1 = term1 + 0.25*np.exp(-y[0]*tmp1[0] - y[1]*tmp1[1])
-            
-    #         term1 = -np.log(term1)
-    #         term2 = p1**2/2+p2**2/2
-    #         H = term1 + term2
-    #         return H
+    #*********** nD_Rosenbrock #**************
+    elif dist_name == 'nD_Rosenbrock':
+        def H_function(state):
+            dim = len(state)//2
+            q, p = state[0:dim], state[dim:]
+            term1 = tf.reduce_sum( (100 * (q[1:] - q[:-1]**2)**2 + (1 - q[:-1])**2) / 20)
+            term2 = tf.reduce_sum(p**2/2)
+            H = term1 + term2
+            return H
+    elif dist_name == "2D_Nealsfunnel":
+        def H_function(state):
+            q1, q2, p = state[0], state[1], state[2:]
+            term1 = q1**2/(2*3**2) + q2**2/(2*tf.math.exp(q1))
+            term2 = tf.reduce_sum(p**2/2)
+            H = term1 + term2
+            return H
+    elif dist_name == "5D_illconditioned_Gaussian":
+        def H_function(state):
+            dim = len(state)//2
+            q, p = state[0:dim], state[dim:]
+            var = tf.constant([0.01, 0.1, 1, 10, 100], dtype=tf.float64)
+            term1 = tf.reduce_sum(q**2/(2*var))
+            term2 = tf.reduce_sum(p**2/2)
+            H = term1 + term2
+            return H
+    elif dist_name == "AllenCahn":
+        def H_function(state):
+            dim = len(state)//2
+            q, p = state[0:dim], state[dim:]
+            def V(x):
+                return (1-x**2)**2
+            dx = 1/25
+            term1 = tf.reduce_sum((q[1:] - q[:-1])**2/(2*dx) + dx/2 * (V(q[1:]) + V(q[:-1])))
+            term2 = tf.reduce_sum(p**2/2)
+            H = term1 + term2
+            return H
+    elif dist_name == "ellipticpde":
+        def H_function(state):
+            dim = len(state)//2
+            q, p = state[0:dim], state[dim:]
+            sensor = utils.get_pdesensor()
+            fval,_ = utils.get_pdef()
+            k = tf.matmul(tf.linalg.inv(tf.matmul(tf.transpose(sensor), sensor)), tf.matmul(tf.transpose(sensor),tf.reshape(q,shape=(-1,1))))
+            x, y = sensor[:,0], sensor[:,1]
+            term1 = tf.reduce_sum((k[0,0] * 2 * tf.math.cos(2*x) - q * 4 * tf.math.sin(2*x) + k[1,0] * 2 * tf.cos(2*y) - q * 4 * tf.math.sin(2*y) - fval) ** 2 / 2)
+            term2 = tf.reduce_sum(p**2/2)
+            H = term1 + term2
+            return H
     else:
         raise ValueError("probability distribution name not recognized")
 

@@ -23,7 +23,6 @@ def train(config):
     test_timegrads = tf.convert_to_tensor(data['test_timegrads'], dtype=tf.float32)
 
     model = hnn.HNN(config["input_dim"], config["num_hidden"], config["num_layers"], config["output_dim"], acti=config["acti"], baseline=config["baseline"], field_type=config["field_type"])
-    model.load_weights(config["path_model"])
     
     loss_obj = tf.keras.losses.MeanSquaredError()
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)

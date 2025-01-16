@@ -68,6 +68,28 @@ def functions(dist_name):
             term2 = tf.reduce_sum(p**2/2)
             H = term1 + term2
             return H
+    elif dist_name == "pmglmmA":
+        def H_function(state):
+            # returns the value of Hamiltonian A of equatioin (16) in Alenlov et al 2021.
+            dim = len(state)//2
+            theta, u, rho, p = state[0:13], state[13:dim], state[dim:dim+13], state[dim+13:]
+            return tf.reduce_sum(rho**2/2) + tf.reduce_sum(u**2/2) + tf.reduce_sum(p**2/2)
+    elif dist_name == "pmglmmB":
+        def H_function(state):
+            # returns the value of Hamiltonian B of equatioin (16) in Alenlov et al 2021.
+            dim = len(state)//2
+            theta, u, rho, p = state[0:13], state[13:dim], state[dim:dim+13], state[dim+13:]
+            part1 = tf.reduce_sum(theta**2/2)
+            part2 = -tf.math.log()
+
+    elif dist_name == "pmglmm":
+        def H_function(state):
+            # returns the value of Hamiltonian H = A + B of equatioin (16) in Alenlov et al 2021.
+            dim = len(state)//2
+            theta, u, rho, p = state[0:13], state[13:dim], state[dim:dim+13], state[dim+13:]
+            H_A = tf.reduce_sum(rho**2/2) + tf.reduce_sum(u**2/2) + tf.reduce_sum(p**2/2)
+
+
     else:
         raise ValueError("probability distribution name not recognized")
 

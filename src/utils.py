@@ -107,5 +107,24 @@ def get_pdef(seed=0):
     fval = RegularGridInterpolator((x,y), fg)(sensor)
     return fval, (x,y, fg)
 
-# def get
+def getglmm(seed=0, T=500, n = 6, w = np.array([0.8,0.2]), mu = np.array([0,3]), la = np.array([10, 3]), 
+            beta = np.array([-1.1671, 2.4665, -0.1918, -1.0080, 0.6212, 0.6524, 1.5410, 0.2653])):
+    """
+    Get simulated observatons of the general linear mixture model in section 4.3 of Alenlöv et al 2021.
+    """
+
+    np.random.seed(seed)
+    # generate X
+    samples_normal = np.concat([np.random.normal(loc=_mu,scale=1/_la,size=T) for _mu, _la in zip(mu, la)]).T
+    X = np.sum(np.random.multinomial(1, w, T) * samples_normal, axis=-1)
+    # generate Z
+    Z = np.random.normal(size=(T,n,len(beta)))
+    # generate Y
+    p = 1/(1+np.exp(- X - Z @ beta))
+    Y = np.random.binomail(1, p=p)
+    return Y
+
+
+
+    
     

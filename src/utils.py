@@ -167,18 +167,17 @@ def pmintegrator(theta,u,rho,p, pmgrad_fn, dt, num_int, require_grads=False):
     """
     states = np.zeros((num_int+1, len(np.concat([theta,u,rho,p], axis=0))))
     states[0,:] = np.concat([theta,u,rho,p], axis=0)
+    states_for_grads, time_grads = [],[]
     for i in range(num_int):
         theta, u, rho, p = H_A_sol(theta, u, rho, p, dt/2)
+        if require_grads:
+            states_for_grads.append(np.concat([theta,u,rho,p], axis=0))
+            time_grads.append(np.concat(pmgrad_fn(theta, u, rho, p), axis=0))
         theta, u, rho, p = H_B_sol(theta, u, rho, p, pmgrad_fn, dt)
         theta, u, rho, p = H_A_sol(theta, u, rho, p, dt/2)
         states[i+1,:] = np.concat([theta,u,rho,p], axis=0)
     if require_grads:
-        time_grads = np.zeros((num_int+1, len(np.concat([theta,u,rho,p], axis=0))))
-        time_grads[:, len(theta)+len(u):] = np.stack([pmgrad_fn(state[0:len(theta)], 
-                                                                state[len(theta):len(theta)+len(u)],
-                                                                state[len(theta)+len(u):len(theta)+len(u)+len(rho)],
-                                                                state[len(theta)+len(u)+len(rho)+len(p):]) for state in states])
-        return states, time_grads
+        return states, np.stack(states_for_grads), np.concat([np.zeors((len(time_grads, len(theta)+len(u)))), np.stack(time_grads)],axis=1)
     else:
         return states
 

@@ -368,14 +368,15 @@ class PMHMC(MCMC):
         if self.hamiltonian_model:
             def pmgrad_fn(theta, u, rho, p):
                 cur_state = tf.reshape(tf.convert_to_tensor(np.concat([theta, u, rho, p],axis=0), dtype=tf.float32), [1,self.dim])
-                return tf.reshape(self.hamiltonian_model.get_gradient(cur_state),[-1]).numpy()[:self.dim//2]
+                grad = tf.reshape(self.hamiltonian_model.get_gradient(cur_state),[-1]).numpy()[self.dim//2:]
+                return grad[0:self.dim_marginal], grad[self.dim_marginal:]
         else:
             pmgrad_fn = utils.getpmgrad_fn(self.H_B)
         return utils.pmintegrator(theta, u, rho, p, pmgrad_fn, self.L/self.num_int, self.num_int)[-1]
     
     def sample(self):
         super().sample()
-        self.samples = self.samples[:,:,0:self.dim//2] # delete the momentum vectors.
+        self.samples = self.samples[:,:,0:self.dim_marginal] # delete the latent variables and momentum vectors.
     
     def get_acceptance_rate(self, cur_state, new_state):
         H_cur = self.H_function(cur_state)

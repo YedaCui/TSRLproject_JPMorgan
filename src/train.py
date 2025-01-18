@@ -13,9 +13,11 @@ def train(config):
     np.random.seed(config["seed"])
     tf.random.set_seed(config["seed"])
     random.seed(config["seed"])
-
-
-    data = gene_data.get_dataset(**config)
+    
+    if "pseudo-marginal" in config:
+        data = gene_data.get_dataset_pm(**config)
+    else:
+        data = gene_data.get_dataset(**config)
     # arrange data
     train_states = tf.convert_to_tensor( data['train_states'], dtype=tf.float32)
     test_states = tf.convert_to_tensor(data['test_states'], dtype=tf.float32)

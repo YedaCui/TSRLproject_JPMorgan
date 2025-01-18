@@ -107,12 +107,11 @@ def get_pdef(seed=0):
     fval = RegularGridInterpolator((x,y), fg)(sensor)
     return fval, (x,y, fg)
 
-def getglmm(seed=0, T=500, n = 6, w = np.array([0.8,0.2]), mu = np.array([0,3]), la = np.array([10, 3]), 
+def getglmmdata(seed=0, T=500, n = 6, w = np.array([0.8,0.2]), mu = np.array([0,3]), la = np.array([10, 3]), 
             beta = np.array([-1.1671, 2.4665, -0.1918, -1.0080, 0.6212, 0.6524, 1.5410, 0.2653])):
     """
     Get simulated observatons of the general linear mixture model in section 4.3 of Alenlöv et al 2021.
     """
-
     np.random.seed(seed)
     # generate X
     samples_normal = np.concat([np.random.normal(loc=_mu,scale=1/_la,size=T) for _mu, _la in zip(mu, la)]).T
@@ -124,7 +123,64 @@ def getglmm(seed=0, T=500, n = 6, w = np.array([0.8,0.2]), mu = np.array([0,3]),
     Y = np.random.binomail(1, p=p)
     return Y
 
+def H_A_sol(theta, u, rho, p, dt):
+    """
+    Get the explicit solution of Hamiltonian A in equation (17) of Alenlov 2021.
+    """
+    theta1 = theta + dt * rho
+    rho1 = rho
+    u1 = p * np.sin(dt) + u * np.cos(dt)
+    p1 = p * np.cos(dt) - u * np.sin(dt)
+    return theta1, u1, rho1, p1
 
+def H_B_sol(theta, u, rho, p, pmgrad_fn, dt):
+    """
+    Get the soltion of Hamiltonian B in equation (18) of Alenlov 2021.
+    """
+    grad_rho, grad_p = pmgrad_fn(theta, u, rho, p)
+    theta1 = theta
+    rho1 = rho + dt * grad_rho
+    u1 = u
+    p1 = p + dt * grad_p
+    return theta1, u1, rho1, p1
+
+def getpmgrad_fn(H_B):
+    """
+    Get the \partial rho / \partial t and \partial p / \partial t in equation (16) of Alenlov 2021.
+    """
+    def pmgrad_fn(theta, u, rho, p):
+        state = tf.convert_to_tensor(tf.concat([theta,u,rho,p],axis=0))
+        with tf.GradientTape() as tape:
+            tape.watch(state)
+            H = H_B(state)
+        grad = tape.gradient(H,state)
+        grad_rho, grad_p = -grad[0:len(theta)], -grad[len(theta):len(u)+len(theta)]
+        return np.array(grad_rho), np.array(grad_p)
+    return pmgrad_fn
+
+def pmintegrator(theta,u,rho,p, pmgrad_fn, dt, num_int, require_grads=False):
+    """
+    Implement the splitting operator pseudo marginal HMC integrator in Alenlov 2021.
+    
+    Args:
+        require_grads : 'bool' If True, return the time gradients of Hamiltian B at each points.
+    """
+    states = np.zeros((num_int+1, len(np.concat([theta,u,rho,p], axis=0))))
+    states[0,:] = np.concat([theta,u,rho,p], axis=0)
+    for i in range(num_int):
+        theta, u, rho, p = H_A_sol(theta, u, rho, p, dt/2)
+        theta, u, rho, p = H_B_sol(theta, u, rho, p, pmgrad_fn, dt)
+        theta, u, rho, p = H_A_sol(theta, u, rho, p, dt/2)
+        states[i+1,:] = np.concat([theta,u,rho,p], axis=0)
+    if require_grads:
+        time_grads = np.zeros((num_int+1, len(np.concat([theta,u,rho,p], axis=0))))
+        time_grads[:, len(theta)+len(u):] = np.stack([pmgrad_fn(state[0:len(theta)], 
+                                                                state[len(theta):len(theta)+len(u)],
+                                                                state[len(theta)+len(u):len(theta)+len(u)+len(rho)],
+                                                                state[len(theta)+len(u)+len(rho)+len(p):]) for state in states])
+        return states, time_grads
+    else:
+        return states
 
     
     

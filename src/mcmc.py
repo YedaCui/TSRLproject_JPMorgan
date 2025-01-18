@@ -331,3 +331,53 @@ class NUTS(MCMC):
         
         return pos_minus, mom_minus, pos_plus, mom_plus, pos_new, mom_new, nprime, sprime, alphaprime, nalphaprime, monitor, only_grad
 
+
+class PMHMC(MCMC):
+    def __init__(self, initial_state, dim_marginal, num_samples, burnin=0, chains=1, L=10, epsilon=0.25, hamiltonain_model=None, H_function=None, H_B=None, seed=0, **kwargs):
+        """
+        Initialize for the Pseudo Marginal Hamiltoanian Monte Carlo by Alenlov et al 2021.
+
+        Args:
+            initial_state : array-like object recording the intial state (not including momentum).
+            dim_marginal : 'int' Integer number of the dimension of the marginal distribution.
+            num_samples : 'int' Integer number of samples.
+            burnin : 'int' Integer number of burn-in steps.
+            cahins : 'int' Integer number of independent chains.
+            L : 'int' or 'float' Time length.
+            epsilon : 'float' Integration step size.
+            hamiltonian_model : python class with method 'get_gradient' calculating the derivative w.r.t. the current state (without momentum).
+            H_funtion : python callable which takes an arguments like "state" and returns the log-density at this state.
+            H_B : python callable which takes an arguments like "state" and returns the log-density of the Hamiltonian B in euqation (16) of Alenlov 2021 at this state.
+        """
+        super(HMC,self).__init__(initial_state, num_samples, burnin=burnin, chains=chains, seed=seed, **kwargs)
+        self.initial_state = np.concat([self.initial_state, np.zeros(self.dim)]) # add the momentum vector into the state vector
+        self.dim *= 2 # update the state dimension
+        self.dim_marginal = dim_marginal
+        self.L = L
+        self.epsilon = epsilon
+        self.num_int = int(L/epsilon) # number of integtation steps
+        self.hamiltonian_model = hamiltonain_model
+        self.H_function = H_function
+        self.H_B = H_B
+
+    def get_proposal(self, cur_state):
+        # initialize the momentum vector.
+        for i in range(self.dim//2):
+            cur_state[self.dim//2+i] = norm(loc=0,scale=1).rvs()
+        theta, u, rho, p = cur_state[0:self.dim_marginal], cur_state[self.dim_marginal:(self.dim//2)], cur_state[(self.dim//2):(self.dim//2+self.dim_marginal)], cur_state[(self.dim//2+self.dim_marginal):]
+        if self.hamiltonian_model:
+            def pmgrad_fn(theta, u, rho, p):
+                cur_state = tf.reshape(tf.convert_to_tensor(np.concat([theta, u, rho, p],axis=0), dtype=tf.float32), [1,self.dim])
+                return tf.reshape(self.hamiltonian_model.get_gradient(cur_state),[-1]).numpy()[:self.dim//2]
+        else:
+            pmgrad_fn = utils.getpmgrad_fn(self.H_B)
+        return utils.pmintegrator(theta, u, rho, p, pmgrad_fn, self.L/self.num_int, self.num_int)[-1]
+    
+    def sample(self):
+        super().sample()
+        self.samples = self.samples[:,:,0:self.dim//2] # delete the momentum vectors.
+    
+    def get_acceptance_rate(self, cur_state, new_state):
+        H_cur = self.H_function(cur_state)
+        H_new = self.H_function(new_state)
+        return np.minimum(1,np.exp(H_cur - H_new))

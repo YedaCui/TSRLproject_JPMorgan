@@ -56,7 +56,7 @@ def get_dataset(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, 
     
     return data
 
-def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, initial_marginal=np.zeros(13), dim_u=128, dist_name='pmglmmB', dt=0.25, num_int=4, **kwargs):
+def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, initial_marginal=np.array([0.5838, 0.3805, -1.5062, -0.0442, 0.4717, -0.1435, 0.6371, -0.0522, 0, 3, 10, 3, 0.8]), dim_u=128, dist_name='pmglmmB', dt=0.25, num_int=4, **kwargs):
     """
     Get the dataset for traing and testing.
 
@@ -79,7 +79,7 @@ def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.
         print("Successfully loaded data")
         return data
     
-    data = {'meta': locals()} # record all the augments.
+    data = {}
     np.random.seed(seed)
     states, timegrads = [],[]
     dim_marginal = len(initial_marginal)

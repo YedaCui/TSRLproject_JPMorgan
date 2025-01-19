@@ -22,6 +22,10 @@ def sampling(config_name, sampler_type, initial_state, num_samples, burnin, chai
         sampler = mcmc.HMC(initial_state=initial_state, num_samples=num_samples, burnin=burnin, chains=chains, epsilon=epsilon, hamiltonain_model=model, H_function=functions.functions(config["dist_name"]),seed=seed, **kwargs)
     elif sampler_type == "NUTS":
         sampler = mcmc.NUTS(initial_state=initial_state, num_samples=num_samples, burnin=burnin, chains=chains, epsilon=epsilon, hamiltonain_model=model, H_function=functions.functions(config["dist_name"]),seed=seed, **kwargs)
+    elif sampler_type == "PMHMC":
+        sampler = mcmc.PMHMC(initial_state=initial_state, num_samples=num_samples, burnin=burnin, chains=chains, epsilon=epsilon, hamiltonain_model=model, H_function=functions.functions(config["dist_name"]),seed=seed, **kwargs)
+    else:
+        raise ValueError("The sampler type is not supported.")
     if sample_path is None:
         sampler.sample()
     else:
@@ -30,9 +34,6 @@ def sampling(config_name, sampler_type, initial_state, num_samples, burnin, chai
         sampler.samples = data_samples["samples"]
         sampler.numgrad = data_samples["numgrad"]
         sampler.monitor = data_samples["monitor"]
-        # for name in ["samples","numgrad", "monitor"]:
-        #     if hasattr(sampler, name):
-        #         setattr(sampler, name, data_samples[name])
     return sampler
 
 if __name__ == "__main__":

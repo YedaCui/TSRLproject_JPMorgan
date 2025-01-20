@@ -114,13 +114,13 @@ def getglmmdata(seed=0, T=500, n = 6, w = np.array([0.8,0.2]), mu = np.array([0,
     """
     np.random.seed(seed)
     # generate X
-    samples_normal = np.concat([np.random.normal(loc=_mu,scale=1/_la,size=T) for _mu, _la in zip(mu, la)]).T
-    X = np.sum(np.random.multinomial(1, w, T) * samples_normal, axis=-1)
+    samples_normal = np.stack([np.random.normal(loc=_mu,scale=1/_la,size=T) for _mu, _la in zip(mu, la)]).T
+    X = np.sum(np.random.multinomial(1, w, T) * samples_normal, axis=-1, keepdims=True)
     # generate Z
     Z = np.random.normal(size=(T,n,len(beta)))
     # generate Y
     p = 1/(1+np.exp(- X - Z @ beta))
-    Y = np.random.binomail(1, p=p)
+    Y = np.random.binomial(1, p=p)
     return Y
 
 def H_A_sol(theta, u, rho, p, dt):
@@ -144,6 +144,10 @@ def H_B_sol(theta, u, rho, p, pmgrad_fn, dt):
     p1 = p + dt * grad_p
     return theta1, u1, rho1, p1
 
+def removezeros(a, threshold):
+    a[np.abs(a) < threshold] = 0
+    return a
+
 def getpmgrad_fn(H_B):
     """
     Get the \partial rho / \partial t and \partial p / \partial t in equation (16) of Alenlov 2021.
@@ -155,7 +159,9 @@ def getpmgrad_fn(H_B):
             H = H_B(state)
         grad = tape.gradient(H,state)
         grad_rho, grad_p = -grad[0:len(theta)], -grad[len(theta):len(u)+len(theta)]
-        return np.array(grad_rho), np.array(grad_p)
+        grad_rho, grad_p = np.array(grad_rho), np.array(grad_p)
+        grad_rho, grad_p = removezeros(grad_rho, 1e-20), removezeros(grad_p, 1e-20)
+        return grad_rho, grad_p
     return pmgrad_fn
 
 def pmintegrator(theta,u,rho,p, pmgrad_fn, dt, num_int, require_grads=False):
@@ -177,9 +183,15 @@ def pmintegrator(theta,u,rho,p, pmgrad_fn, dt, num_int, require_grads=False):
         theta, u, rho, p = H_A_sol(theta, u, rho, p, dt/2)
         states[i+1,:] = np.concat([theta,u,rho,p], axis=0)
     if require_grads:
-        return states, np.stack(states_for_grads), np.concat([np.zeors((len(time_grads, len(theta)+len(u)))), np.stack(time_grads)],axis=1)
+        return states, np.stack(states_for_grads), np.concat([np.zeros((len(time_grads), len(theta)+len(u))), np.stack(time_grads)],axis=1)
     else:
         return states
 
+def get_marginal_initial():
+    return np.array([0.5838, 0.3805, -1.5062, -0.0442, 0.4717, -0.1435, 0.6371, -0.0522, 0, 3, 10, 3, 0.8])
+
+def get_latent_u(dim_u, seed=0):
+    np.random.seed(0)
+    return np.random.normal(size=dim_u)
     
     

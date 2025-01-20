@@ -67,7 +67,7 @@ class MCMC(ABC):
                 else:
                     # reject the new state
                     samples[idx_sample,:] = cur_state
-                if idx_sample % 1000 == 0:
+                if idx_sample % 100 == 0:
                     print(f"Completed generating samples {idx_sample}/{self.num_samples}.")
             
             self.samples[idx_chain,:,:] = samples
@@ -349,7 +349,7 @@ class PMHMC(MCMC):
             H_funtion : python callable which takes an arguments like "state" and returns the log-density at this state.
             H_B : python callable which takes an arguments like "state" and returns the log-density of the Hamiltonian B in euqation (16) of Alenlov 2021 at this state.
         """
-        super(HMC,self).__init__(initial_state, num_samples, burnin=burnin, chains=chains, seed=seed, **kwargs)
+        super(PMHMC,self).__init__(initial_state, num_samples, burnin=burnin, chains=chains, seed=seed, **kwargs)
         self.initial_state = np.concat([self.initial_state, np.zeros(self.dim)]) # add the momentum vector into the state vector
         self.dim *= 2 # update the state dimension
         self.dim_marginal = dim_marginal
@@ -362,8 +362,7 @@ class PMHMC(MCMC):
 
     def get_proposal(self, cur_state):
         # initialize the momentum vector.
-        for i in range(self.dim//2):
-            cur_state[self.dim//2+i] = norm(loc=0,scale=1).rvs()
+        cur_state[self.dim//2:] = np.random.normal(size=self.dim//2)
         theta, u, rho, p = cur_state[0:self.dim_marginal], cur_state[self.dim_marginal:(self.dim//2)], cur_state[(self.dim//2):(self.dim//2+self.dim_marginal)], cur_state[(self.dim//2+self.dim_marginal):]
         if self.hamiltonian_model:
             def pmgrad_fn(theta, u, rho, p):

@@ -27,7 +27,7 @@ def train(config):
     model = hnn.HNN(config["input_dim"], config["num_hidden"], config["num_layers"], config["output_dim"], acti=config["acti"], baseline=config["baseline"], field_type=config["field_type"])
     
     loss_obj = tf.keras.losses.MeanSquaredError()
-    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
+    optimizer = tf.keras.optimizers.Adam()
     
     @tf.function
     def train_step(x,y):
@@ -63,13 +63,14 @@ if __name__ == "__main__":
     gpus = tf.config.experimental.list_physical_devices('GPU')
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
-    tf.config.set_visible_devices(gpus[1], "GPU")
+    tf.config.set_visible_devices(gpus[2], "GPU")
 
     # config = CONFIGS["LHNN_1DGaussianmixture"] # load the config which records all experiment parameters.
-    config = CONFIGS["LHNN_3DRosenbrock"]
+    # config = CONFIGS["LHNN_3DRosenbrock"]
     # config = CONFIGS["LHNN_3DRosenbrock_T100"]
     # config = CONFIGS["LHNN_10DRosenbrock"]
     # config = CONFIGS["LHNN_2DNealsfunnel"]
+    config = CONFIGS["LHNN_pmglmm"]
     
     # config = CONFIGS["LHNN_ellipticpde"]
     # data = gene_data.get_dataset(**config)

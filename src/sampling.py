@@ -5,7 +5,7 @@ import mcmc
 import numpy as np
 import tensorflow as tf
 import pickle
-
+import utils
 
 def sampling(config_name, sampler_type, initial_state, num_samples, burnin, chains=1, epsilon=0.05, model_path=None, seed=0, sample_path=None, **kwargs):
     """
@@ -23,7 +23,7 @@ def sampling(config_name, sampler_type, initial_state, num_samples, burnin, chai
     elif sampler_type == "NUTS":
         sampler = mcmc.NUTS(initial_state=initial_state, num_samples=num_samples, burnin=burnin, chains=chains, epsilon=epsilon, hamiltonain_model=model, H_function=functions.functions(config["dist_name"]),seed=seed, **kwargs)
     elif sampler_type == "PMHMC":
-        sampler = mcmc.PMHMC(initial_state=initial_state, num_samples=num_samples, burnin=burnin, chains=chains, epsilon=epsilon, hamiltonain_model=model, H_function=functions.functions(config["dist_name"]),seed=seed, **kwargs)
+        sampler = mcmc.PMHMC(initial_state=initial_state, num_samples=num_samples, burnin=burnin, chains=chains, epsilon=epsilon, hamiltonain_model=model, H_function=functions.functions(config["dist_name"]),H_B=functions.functions(config["dist_name_B"]), seed=seed, **kwargs)
     else:
         raise ValueError("The sampler type is not supported.")
     if sample_path is None:
@@ -117,6 +117,10 @@ if __name__ == "__main__":
     # sampler = sampling(config_name="LHNN_ellipticpde", sampler_type="NUTS", initial_state=np.array([0]*50), num_samples=5000, burnin=1000, chains=1, epsilon=0.025, 
     #          model_path=None, threshold_nn=10, num_lf=20, threshold_lf=1000) # traditional nuts.
     # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_nuts_ellipticpde.pkl"
+
+    sampler = sampling(config_name="LHNN_pmglmm", sampler_type="PMHMC", initial_state=np.concat([utils.get_marginal_initial(),utils.get_latent_u(500*128*(1+6*8))]), dim_marginal=13, num_samples=500, burnin=1000, chains=1, epsilon=0.025, L=5,
+             model_path=None) 
+    sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_hmc_pmglmm.pkl"
 
     # Save the samples
     data_samples = {

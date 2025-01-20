@@ -56,7 +56,7 @@ def get_dataset(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, 
     
     return data
 
-def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, initial_marginal=np.array([0.5838, 0.3805, -1.5062, -0.0442, 0.4717, -0.1435, 0.6371, -0.0522, 0, 3, 10, 3, 0.8]), dim_u=128, dist_name='pmglmmB', dt=0.25, num_int=4, **kwargs):
+def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, initial_marginal=utils.get_marginal_initial(), dim_u=128, dist_name_B='pmglmmB', dt=0.25, num_int=4, **kwargs):
     """
     Get the dataset for traing and testing.
 
@@ -68,7 +68,7 @@ def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.
         per_train : 'float' Percentage of train dataset.
         initial_marginal : 'np.array' The initial marginal state.
         dim_u : 'int' The dimension of the latent varibles.
-        dist_name : 'str' The distribution name.
+        dist_name_B : 'str' The distribution name of Hamiltoian B.
         dt : 'float' The integration time step.
         num_int : 'int' Number of integrator step.
     """
@@ -85,14 +85,13 @@ def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.
     dim_marginal = len(initial_marginal)
     input_dim = 2*(dim_marginal+dim_u)
     initial_state = np.zeros(input_dim)
-    for idx_dim in range(dim_marginal, dim_marginal+dim_u):
-        initial_state[idx_dim] = scipy.stats.norm(0,1).rvs()
+    initial_state[:dim_marginal] = initial_marginal
+    initial_state[dim_marginal:dim_marginal+dim_u] = utils.get_latent_u(dim_u)
 
-    pmgrad_fn = utils.get_pmgrad_fn(functions(dist_name)) # Get the timegrad function based on the distribution name.
+    pmgrad_fn = utils.getpmgrad_fn(functions(dist_name_B)) # Get the timegrad function based on the distribution name.
     for idx_sample in range(num_samples):
         print(f"Begin to generate the {idx_sample}th sample.")
-        for idx_dim in range(input_dim//2, input_dim):
-            initial_state[idx_dim] = scipy.stats.norm(0,1).rvs() # initialize the momentum.
+        initial_state[input_dim//2:] = np.random.normal(size=input_dim//2) # initialize the momentum.
         state, state_for_grad, timegrad  = utils.pmintegrator(initial_state[0:dim_marginal],
                                                               initial_state[dim_marginal:dim_marginal+dim_u],
                                                               initial_state[dim_marginal+dim_u:2*dim_marginal+dim_u],

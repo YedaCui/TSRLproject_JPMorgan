@@ -234,7 +234,7 @@ CONFIGS = {
         "seed" : 0,
         "load" : False,
         "pseudo-marginal" : None,
-        "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/pmglmmB.obj",
+        "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/pmglmmB",
         "num_samples" : 400,
         "per_train" : 0.9,
         "dim_u" : 500*128*(1+6*8),

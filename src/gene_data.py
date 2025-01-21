@@ -79,9 +79,10 @@ def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.
         print("Successfully loaded data")
         return data
     
-    data = {}
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
     np.random.seed(seed)
-    states, timegrads = [],[]
     dim_marginal = len(initial_marginal)
     input_dim = 2*(dim_marginal+dim_u)
     initial_state = np.zeros(input_dim)
@@ -91,26 +92,21 @@ def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.
     pmgrad_fn = utils.getpmgrad_fn(functions(dist_name_B)) # Get the timegrad function based on the distribution name.
     for idx_sample in range(num_samples):
         print(f"Begin to generate the {idx_sample}th sample.")
+        data = {}
         initial_state[input_dim//2:] = np.random.normal(size=input_dim//2) # initialize the momentum.
         state, state_for_grad, timegrad  = utils.pmintegrator(initial_state[0:dim_marginal],
                                                               initial_state[dim_marginal:dim_marginal+dim_u],
                                                               initial_state[dim_marginal+dim_u:2*dim_marginal+dim_u],
                                                               initial_state[2*dim_marginal+dim_u:],
                                                               pmgrad_fn, dt, num_int, require_grads=True)
-        states.append(state_for_grad)
-        timegrads.append(timegrad)
-        initial_state[0:input_dim//2] = state[-1,0:input_dim//2]
-    data['states'] = np.concat(states)
-    data['timegrads'] = np.concat(timegrads)
-
-    # make a train/test split
-    split_idx = int(len(data['states']) * per_train)
-    split_data = {}
-    for k in ['states', 'timegrads']:
-        split_data['train_' + k], split_data['test_' + k] = data[k][:split_idx], data[k][split_idx:]
-    data = split_data
-
-    with open(path, 'wb') as f:
-        pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
-    
-    return data
+        data['states'] = state_for_grad
+        data['timegrads'] = timegrad
+        # make a train/test split
+        split_idx = int(len(data['states']) * per_train)
+        with open(path+f"/train_{idx_sample}.obj", 'wb') as f:
+            pickle.dump({"train"+"_"+k: data[k][:split_idx] for k in ['states', 'timegrads']}, f, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(path+f"/test_{idx_sample}.obj", 'wb') as f:
+            pickle.dump({"train"+"_"+k: data[k][split_idx:] for k in ['states', 'timegrads']}, f, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        initial_state[0:input_dim//2] = state[-1,0:input_dim//2] # update the initial_state
+    return

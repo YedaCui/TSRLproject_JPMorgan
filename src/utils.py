@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from scipy.interpolate import RegularGridInterpolator
+import pdb
 
 def leapfrog(get_acceleration, initial_state, dt, num_lf):
     """
@@ -175,6 +176,7 @@ def pmintegrator(theta,u,rho,p, pmgrad_fn, dt, num_int, require_grads=False):
     states[0,:] = np.concat([theta,u,rho,p], axis=0)
     states_for_grads, time_grads = [],[]
     for i in range(num_int):
+
         theta, u, rho, p = H_A_sol(theta, u, rho, p, dt/2)
         if require_grads:
             states_for_grads.append(np.concat([theta,u,rho,p], axis=0))
@@ -188,7 +190,7 @@ def pmintegrator(theta,u,rho,p, pmgrad_fn, dt, num_int, require_grads=False):
         return states
 
 def get_marginal_initial():
-    return np.array([0.5838, 0.3805, -1.5062, -0.0442, 0.4717, -0.1435, 0.6371, -0.0522, 0, 3, 10, 3, 0.8])
+    return np.array([0.5838, 0.3805, -1.5062, -0.0442, 0.4717, -0.1435, 0.6371, -0.0522, 0, 0, np.log(1), np.log(0.1), 0.5])
 
 def get_latent_u(dim_u, seed=0):
     np.random.seed(0)

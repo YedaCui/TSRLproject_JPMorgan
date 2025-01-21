@@ -44,7 +44,6 @@ class MCMC(ABC):
         for idx_chain in range(self.chains):
             self.idx_chain = idx_chain
             print(f"Starting chain {idx_chain+1}/{self.chains}.")
-            self.prep_chain()
             # Initialize the state
             cur_state = np.array(self.initial_state)
             samples = np.zeros((self.num_samples, self.dim))

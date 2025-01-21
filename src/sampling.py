@@ -120,7 +120,7 @@ if __name__ == "__main__":
 
     sampler = sampling(config_name="LHNN_pmglmm", sampler_type="PMHMC", initial_state=np.concat([utils.get_marginal_initial(),utils.get_latent_u(500*128*(1+6*8))]), dim_marginal=13, num_samples=500, burnin=1000, chains=1, epsilon=0.025, L=5,
              model_path=None) 
-    sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_hmc_pmglmm.pkl"
+    sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_hmc_pmglmm_1.pkl"
 
     # Save the samples
     data_samples = {

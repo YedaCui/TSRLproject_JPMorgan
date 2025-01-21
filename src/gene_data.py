@@ -104,9 +104,9 @@ def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.
         # make a train/test split
         split_idx = int(len(data['states']) * per_train)
         with open(path+f"/train_{idx_sample}.obj", 'wb') as f:
-            pickle.dump({"train"+"_"+k: data[k][:split_idx] for k in ['states', 'timegrads']}, f, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump({k: data[k][:split_idx] for k in ['states', 'timegrads']}, f, protocol=pickle.HIGHEST_PROTOCOL)
         with open(path+f"/test_{idx_sample}.obj", 'wb') as f:
-            pickle.dump({"train"+"_"+k: data[k][split_idx:] for k in ['states', 'timegrads']}, f, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump({k: data[k][split_idx:] for k in ['states', 'timegrads']}, f, protocol=pickle.HIGHEST_PROTOCOL)
         
         initial_state[0:input_dim//2] = state[-1,0:input_dim//2] # update the initial_state
     return

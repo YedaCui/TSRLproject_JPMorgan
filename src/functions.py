@@ -89,8 +89,8 @@ def functions(dist_name):
             f = w1 * tf.math.exp(-(X-mu[0])**2/2*tf.math.exp(logla[0])) + (1-w1) * tf.math.exp(-(X-mu[1])**2/2*tf.math.exp(logla[1]))
             probs = 1/(1+tf.math.exp(-tf.expand_dims(X,-1) - tf.squeeze(tf.matmul(Z, tf.expand_dims(beta,axis=-1)))))
             g = tf.reduce_prod(probs * y + (1-probs) * (1-y), axis=-1)
-            prop = tf.math.exp(-X**2/2/9)
-            part2 = -tf.reduce_sum(tf.math.log(tf.reduce_mean(f*g/prop, axis=-1)))
+            prop = tf.math.exp(X**2/2/9)
+            part2 = -tf.reduce_sum(tf.math.log(tf.reduce_mean(f*g*prop, axis=-1)))
             part3 = - tf.reduce_sum(logla)
             return part1 + part2 + part3
     elif dist_name == "pmglmm":
@@ -109,8 +109,8 @@ def functions(dist_name):
             f = w1 * tf.math.exp(-(X-mu[0])**2/2*tf.math.exp(logla[0])) + (1-w1) * tf.math.exp(-(X-mu[1])**2/2*tf.math.exp(logla[1]))
             probs = 1/(1+tf.math.exp(-tf.expand_dims(X,-1) - tf.squeeze(tf.matmul(Z, tf.expand_dims(beta,axis=-1)))))
             g = tf.reduce_prod(probs * y + (1-probs) * (1-y), axis=-1)
-            prop = tf.math.exp(-X**2/2/9)
-            part2 = -tf.reduce_sum(tf.math.log(tf.reduce_mean(f*g/prop, axis=-1)))
+            prop = tf.math.exp(X**2/2/9)
+            part2 = -tf.reduce_sum(tf.math.log(tf.reduce_mean(f*g*prop, axis=-1)))
             part3 = - tf.reduce_sum(logla)
             H_B = part1 + part2 + part3
             return H_A + H_B

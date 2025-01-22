@@ -108,8 +108,12 @@ def get_pdef(seed=0):
     fval = RegularGridInterpolator((x,y), fg)(sensor)
     return fval, (x,y, fg)
 
+def getZ(seed=0, T=500, n=6, p=8):
+    np.random.seed(seed)
+    return np.random.normal(size=(T,n,p))
+
 def getglmmdata(seed=0, T=500, n = 6, w = np.array([0.8,0.2]), mu = np.array([0,3]), la = np.array([10, 3]), 
-            beta = np.array([-1.1671, 2.4665, -0.1918, -1.0080, 0.6212, 0.6524, 1.5410, 0.2653])):
+            beta = np.array([-1.1671, 2.4665, -0.1918, -1.0080, 0.6212, 0.6524, 1.5410, 0.2653]), Z = getZ()):
     """
     Get simulated observatons of the general linear mixture model in section 4.3 of Alenlöv et al 2021.
     """
@@ -117,8 +121,6 @@ def getglmmdata(seed=0, T=500, n = 6, w = np.array([0.8,0.2]), mu = np.array([0,
     # generate X
     samples_normal = np.stack([np.random.normal(loc=_mu,scale=1/_la,size=T) for _mu, _la in zip(mu, la)]).T
     X = np.sum(np.random.multinomial(1, w, T) * samples_normal, axis=-1, keepdims=True)
-    # generate Z
-    Z = np.random.normal(size=(T,n,len(beta)))
     # generate Y
     p = 1/(1+np.exp(- X - Z @ beta))
     Y = np.random.binomial(1, p=p)
@@ -145,9 +147,9 @@ def H_B_sol(theta, u, rho, p, pmgrad_fn, dt):
     p1 = p + dt * grad_p
     return theta1, u1, rho1, p1
 
-def removezeros(a, threshold):
-    a[np.abs(a) < threshold] = 0
-    return a
+# def removezeros(a, threshold):
+#     a[np.abs(a) < threshold] = 0
+#     return a
 
 def getpmgrad_fn(H_B):
     """
@@ -161,7 +163,7 @@ def getpmgrad_fn(H_B):
         grad = tape.gradient(H,state)
         grad_rho, grad_p = -grad[0:len(theta)], -grad[len(theta):len(u)+len(theta)]
         grad_rho, grad_p = np.array(grad_rho), np.array(grad_p)
-        grad_rho, grad_p = removezeros(grad_rho, 1e-20), removezeros(grad_p, 1e-20)
+        # grad_rho, grad_p = removezeros(grad_rho, 1e-20), removezeros(grad_p, 1e-20)
         return grad_rho, grad_p
     return pmgrad_fn
 
@@ -176,7 +178,6 @@ def pmintegrator(theta,u,rho,p, pmgrad_fn, dt, num_int, require_grads=False):
     states[0,:] = np.concat([theta,u,rho,p], axis=0)
     states_for_grads, time_grads = [],[]
     for i in range(num_int):
-
         theta, u, rho, p = H_A_sol(theta, u, rho, p, dt/2)
         if require_grads:
             states_for_grads.append(np.concat([theta,u,rho,p], axis=0))
@@ -190,10 +191,10 @@ def pmintegrator(theta,u,rho,p, pmgrad_fn, dt, num_int, require_grads=False):
         return states
 
 def get_marginal_initial():
-    return np.array([0.5838, 0.3805, -1.5062, -0.0442, 0.4717, -0.1435, 0.6371, -0.0522, 0, 0, np.log(1), np.log(0.1), 0.5])
+    return np.array([0.5838, 0.3805, -1.5062, -0.0442, 0.4717, -0.1435, 0.6371, -0.0522, 0, 0, np.log(1), np.log(0.1), 0])
 
 def get_latent_u(dim_u, seed=0):
-    np.random.seed(0)
+    np.random.seed(seed)
     return np.random.normal(size=dim_u)
     
     

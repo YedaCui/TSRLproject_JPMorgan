@@ -1,14 +1,10 @@
-import numpy as np
-from src import utils
-
-state = np.load("states.npy")
-
 from src.functions import functions
-
+from src import utils
+H = functions(dist_name="pmglmm")
 H_B = functions(dist_name="pmglmmB")
-H_B(state)
-dim = len(state)//2
-theta, u, rho, p = state[0:13], state[13:dim], state[dim:dim+13], state[dim+13:]
 pmgrad_fn = utils.getpmgrad_fn(H_B)
-pmgrad_fn(theta, u, rho, p)
+import numpy as np
 
+rho = np.random.normal(size=13)
+p = np.random.normal(size=len(utils.get_latent_u(500*128)))
+states = utils.pmintegrator(utils.get_marginal_initial(), utils.get_latent_u(500*128), rho, p, pmgrad_fn, 0.01, 5000)

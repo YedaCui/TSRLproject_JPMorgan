@@ -75,44 +75,50 @@ def functions(dist_name):
             theta, u, rho, p = state[0:13], state[13:dim], state[dim:dim+13], state[dim+13:]
             return tf.reduce_sum(rho**2/2) + tf.reduce_sum(u**2/2) + tf.reduce_sum(p**2/2)
     elif dist_name == "pmglmmB":
+        Z_coe=tf.convert_to_tensor(utils.getZ(), dtype=tf.float64)
         obs=tf.convert_to_tensor(utils.getglmmdata(), dtype=tf.float64)
         def H_function(state):
             # returns the value of Hamiltonian B of equatioin (16) in Alenlov et al 2021.
             dim = len(state)//2
             theta, u, rho, p = state[0:13], state[13:dim], state[dim:dim+13], state[dim+13:]
-            beta, mu, logla, w1 = theta[0:8], theta[8:10], theta[10:12], theta[12]
-            part1 = tf.reduce_sum(beta**2/2/100) + tf.reduce_sum(mu**2/2/100) + tf.reduce_sum(tf.math.exp(logla)**2/2/100) + tf.reduce_sum(w1**2/2/100) # prior density
+            beta, mu, logla, logitw1 = theta[0:8], theta[8:10], theta[10:12], theta[12]
+            # part1 = tf.reduce_sum(beta**2/2/100) + tf.reduce_sum(mu**2/2/1) + tf.reduce_sum(logla**2/2/1) + tf.reduce_sum(logitw1**2/2/1) # prior density
+            part1 = tf.reduce_sum(theta**2/2/100)
             T, N, n, dim_p = 500, 128, 6, 8
-            X = 3*tf.reshape(u[0:T*N], shape=(T,N))
-            Z = tf.reshape(u[T*N:], shape=(T,N,n,dim_p))
+            X = 3*tf.reshape(u, shape=(T,N))
+            Z = tf.reshape(Z_coe, shape=(T,1,n,dim_p))
             y = tf.reshape(obs, shape=(T,1,n))
-            f = w1 * tf.math.exp(-(X-mu[0])**2/2*tf.math.exp(logla[0])) + (1-w1) * tf.math.exp(-(X-mu[1])**2/2*tf.math.exp(logla[1]))
-            probs = 1/(1+tf.math.exp(-tf.expand_dims(X,-1) - tf.squeeze(tf.matmul(Z, tf.expand_dims(beta,axis=-1)))))
+            f = 1/(1+tf.math.exp(-logitw1)) * tf.math.exp(-(X-mu[0])**2/2*tf.math.exp(logla[0])) + (1-1/(1+tf.math.exp(-logitw1))) * tf.math.exp(-(X-mu[1])**2/2*tf.math.exp(logla[1]))
+            probs = 1/(1+tf.math.exp(-tf.expand_dims(X,-1) - tf.squeeze(tf.matmul(Z, tf.expand_dims(beta,axis=-1)),-1)))
             g = tf.reduce_prod(probs * y + (1-probs) * (1-y), axis=-1)
             prop = tf.math.exp(X**2/2/9)
             part2 = -tf.reduce_sum(tf.math.log(tf.reduce_mean(f*g*prop, axis=-1)))
             part3 = - tf.reduce_sum(logla)
-            return part1 + part2 + part3
+            part4 = logitw1 + 2*tf.math.log(1+tf.math.exp(-logitw1))
+            return part1 + part2 + part3 + part4
     elif dist_name == "pmglmm":
+        Z_coe = tf.convert_to_tensor(utils.getZ(), dtype=tf.float64)
         obs=tf.convert_to_tensor(utils.getglmmdata(), dtype=tf.float64)
         def H_function(state):
             # returns the value of Hamiltonian H = A + B of equatioin (16) in Alenlov et al 2021.
             dim = len(state)//2
             theta, u, rho, p = state[0:13], state[13:dim], state[dim:dim+13], state[dim+13:]
             H_A = tf.reduce_sum(rho**2/2) + tf.reduce_sum(u**2/2) + tf.reduce_sum(p**2/2)
-            beta, mu, logla, w1 = theta[0:8], theta[8:10], theta[10:12], theta[12]
-            part1 = tf.reduce_sum(beta**2/2/100) + tf.reduce_sum(mu**2/2/100) + tf.reduce_sum(tf.math.exp(logla)**2/2/100) + tf.reduce_sum(w1**2/2/100) # prior density
+            beta, mu, logla, logitw1 = theta[0:8], theta[8:10], theta[10:12], theta[12]
+            # part1 = tf.reduce_sum(beta**2/2/100) + tf.reduce_sum(mu**2/2/1) + tf.reduce_sum(logla**2/2/1) + tf.reduce_sum(logitw1**2/2/1) # prior density
+            part1 = tf.reduce_sum(theta**2/2/100)
             T, N, n, dim_p = 500, 128, 6, 8
-            X = 3*tf.reshape(u[0:T*N], shape=(T,N))
-            Z = tf.reshape(u[T*N:], shape=(T,N,n,dim_p))
+            X = 3*tf.reshape(u, shape=(T,N))
+            Z = tf.reshape(Z_coe, shape=(T,1,n,dim_p))
             y = tf.reshape(obs, shape=(T,1,n))
-            f = w1 * tf.math.exp(-(X-mu[0])**2/2*tf.math.exp(logla[0])) + (1-w1) * tf.math.exp(-(X-mu[1])**2/2*tf.math.exp(logla[1]))
-            probs = 1/(1+tf.math.exp(-tf.expand_dims(X,-1) - tf.squeeze(tf.matmul(Z, tf.expand_dims(beta,axis=-1)))))
+            f = 1/(1+tf.math.exp(-logitw1)) * tf.math.exp(-(X-mu[0])**2/2*tf.math.exp(logla[0])) + (1-1/(1+tf.math.exp(-logitw1))) * tf.math.exp(-(X-mu[1])**2/2*tf.math.exp(logla[1]))
+            probs = 1/(1+tf.math.exp(-tf.expand_dims(X,-1) - tf.squeeze(tf.matmul(Z, tf.expand_dims(beta,axis=-1)),-1)))
             g = tf.reduce_prod(probs * y + (1-probs) * (1-y), axis=-1)
             prop = tf.math.exp(X**2/2/9)
             part2 = -tf.reduce_sum(tf.math.log(tf.reduce_mean(f*g*prop, axis=-1)))
             part3 = - tf.reduce_sum(logla)
-            H_B = part1 + part2 + part3
+            part4 = logitw1 + 2*tf.math.log(1+tf.math.exp(-logitw1))
+            H_B = part1 + part2 + part3 + part4
             return H_A + H_B
     else:
         raise ValueError("probability distribution name not recognized")

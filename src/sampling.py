@@ -118,13 +118,13 @@ if __name__ == "__main__":
     #          model_path=None, threshold_nn=10, num_lf=20, threshold_lf=1000) # traditional nuts.
     # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_nuts_ellipticpde.pkl"
 
-    sampler = sampling(config_name="LHNN_pmglmm", sampler_type="PMHMC", initial_state=np.concat([utils.get_marginal_initial(),utils.get_latent_u(500*128*(1+6*8))]), dim_marginal=13, num_samples=500, burnin=1000, chains=1, epsilon=0.025, L=5,
+    sampler = sampling(config_name="LHNN_pmglmm", sampler_type="PMHMC", initial_state=np.concat([utils.get_marginal_initial(),utils.get_latent_u(500*128)]), dim_marginal=13, num_samples=1000, burnin=1000, chains=1, epsilon=0.001, L=5,
              model_path=None) 
-    sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_hmc_pmglmm_1.pkl"
+    sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_hmc_pmglmm_wideprior.pkl"
 
     # Save the samples
     data_samples = {
-        name: getattr(sampler, name, None) for name in ["samples","numgrad", "monitor"]
+        name: getattr(sampler, name, None) for name in ["samples","numgrad", "monitor", "accept"]
     }
     with open(sample_path, "wb") as f:
         pickle.dump(data_samples, f)

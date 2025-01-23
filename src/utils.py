@@ -126,6 +126,9 @@ def getglmmdata(seed=0, T=500, n = 6, w = np.array([0.8,0.2]), mu = np.array([0,
     Y = np.random.binomial(1, p=p)
     return Y
 
+def gettruncated(u):
+    return np.clip(u, -30, 30)
+
 def H_A_sol(theta, u, rho, p, dt):
     """
     Get the explicit solution of Hamiltonian A in equation (17) of Alenlov 2021.
@@ -179,11 +182,14 @@ def pmintegrator(theta,u,rho,p, pmgrad_fn, dt, num_int, require_grads=False):
     states_for_grads, time_grads = [],[]
     for i in range(num_int):
         theta, u, rho, p = H_A_sol(theta, u, rho, p, dt/2)
+        u = gettruncated(u)
         if require_grads:
             states_for_grads.append(np.concat([theta,u,rho,p], axis=0))
             time_grads.append(np.concat(pmgrad_fn(theta, u, rho, p), axis=0))
         theta, u, rho, p = H_B_sol(theta, u, rho, p, pmgrad_fn, dt)
+        u = gettruncated(u)
         theta, u, rho, p = H_A_sol(theta, u, rho, p, dt/2)
+        u = gettruncated(u)
         states[i+1,:] = np.concat([theta,u,rho,p], axis=0)
     if require_grads:
         return states, np.stack(states_for_grads), np.concat([np.zeros((len(time_grads), len(theta)+len(u))), np.stack(time_grads)],axis=1)

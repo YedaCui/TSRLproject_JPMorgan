@@ -72,12 +72,6 @@ def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.
         dt : 'float' The integration time step.
         num_int : 'int' Number of integrator step.
     """
-
-    if load:
-        with open(path, 'rb') as f:
-            data = pickle.load(f)
-        print("Successfully loaded data")
-        return data
     
     if not os.path.exists(path):
         os.makedirs(path)

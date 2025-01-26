@@ -4,6 +4,8 @@ import gene_data
 from configs import CONFIGS
 import hnn
 import random
+import pickle
+import os
 
 def train(config):
     """
@@ -14,10 +16,8 @@ def train(config):
     tf.random.set_seed(config["seed"])
     random.seed(config["seed"])
     
-    if "pseudo-marginal" in config:
-        data = gene_data.get_dataset_pm(**config)
-    else:
-        data = gene_data.get_dataset(**config)
+    
+    data = gene_data.get_dataset(**config)
     # arrange data
     train_states = tf.convert_to_tensor( data['train_states'], dtype=tf.float32)
     test_states = tf.convert_to_tensor(data['test_states'], dtype=tf.float32)
@@ -58,12 +58,75 @@ def train(config):
             bestmodel.set_weights(model.get_weights())
     return bestmodel
 
+def train_pm(config):
+    """
+    The training process of PMHMC.
+    """
+
+    np.random.seed(config["seed"])
+    tf.random.set_seed(config["seed"])
+    random.seed(config["seed"])
+
+    def parse_tfrecord(proto):
+        feature_description = {
+            "states": tf.io.FixedLenFeature(config["input_dim"], tf.float32),
+            "timegrads": tf.io.FixedLenFeature(config["input_dim"], tf.float32),
+        }
+        return tf.io.parse_single_example(proto, feature_description)
+
+    def load_tfrecord(filename):
+        dataset = tf.data.TFRecordDataset(filename)
+        dataset = dataset.map(parse_tfrecord)
+        
+        return dataset
+
+    train_dataset = load_tfrecord(config["path"]+"_train.tfrecord").repeat()
+    test_dataset = load_tfrecord(config["path"]+"_test.tfrecord").repeat()
+
+    model = hnn.HNN(config["input_dim"], config["num_hidden"], config["num_layers"], config["output_dim"], acti=config["acti"], baseline=config["baseline"], field_type=config["field_type"])
+    
+    loss_obj = tf.keras.losses.MeanSquaredError()
+    optimizer = tf.keras.optimizers.Adam()
+    
+    @tf.function
+    def train_step(x,y):
+        with tf.GradientTape() as tape:
+            y_pred = model.get_gradient(x)
+            loss = loss_obj(y,y_pred)
+        grads = tape.gradient(loss, model.trainable_variables)
+        optimizer.apply_gradients(zip(grads, model.trainable_variables))
+    
+    bestloss, bestmodel, train_dist, test_dist = np.inf, None, [], []
+    for idx_epoch in range(config["train_epoch"]):
+        print(f"Begin the {idx_epoch}th training epoch:")
+        for idx_step in range(config["train_step"]):
+            file_path = next(train_file_iter)
+            states, timegrads = load_dict_file(file_path)
+            train_step(states, timegrads)
+
+            train_timegrads_hat = model.get_gradient(states)
+            train_dist.append(tf.reduce_mean((timegrads - train_timegrads_hat)**2))
+
+            file_path = next(test_file_iter)
+            states, timegrads = load_dict_file(file_path)
+            test_timegrads_hat = model.get_gradient(states)
+            test_dist.append(tf.reduce_mean((timegrads - test_timegrads_hat)**2))
+
+        print('Train loss {:.4e} +/- {:.4e}\n test loss {:.4e} +/- {:.4e}'
+            .format(np.mean(np.array(train_dist)), np.std(np.array(train_dist))/len(train_dist)**0.5,
+                    np.mean(np.array(test_dist)), np.std(np.array(test_dist))/len(train_dist)**0.5))
+        if np.mean(np.array(test_dist)) < bestloss:
+            bestloss = np.mean(np.array(test_dist))
+            bestmodel = tf.keras.models.clone_model(model)
+            bestmodel.set_weights(model.get_weights())
+    return bestmodel
+
 if __name__ == "__main__":
 
     gpus = tf.config.experimental.list_physical_devices('GPU')
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
-    tf.config.set_visible_devices(gpus[2], "GPU")
+    tf.config.set_visible_devices(gpus[0], "GPU")
 
     # config = CONFIGS["LHNN_1DGaussianmixture"] # load the config which records all experiment parameters.
     # config = CONFIGS["LHNN_3DRosenbrock"]
@@ -75,5 +138,5 @@ if __name__ == "__main__":
     # config = CONFIGS["LHNN_ellipticpde"]
     # data = gene_data.get_dataset(**config)
     # print("Finished generating the dataset.")
-    model = train(config)
+    model = train_pm(config)
     model.save_weights(config["path_model"])

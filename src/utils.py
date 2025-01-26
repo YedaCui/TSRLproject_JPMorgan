@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from scipy.interpolate import RegularGridInterpolator
-import pdb
+import pickle
 
 def leapfrog(get_acceleration, initial_state, dt, num_lf):
     """
@@ -187,7 +187,6 @@ def pmintegrator(theta,u,rho,p, pmgrad_fn, dt, num_int, require_grads=False):
             time_grads.append(np.concat(pmgrad_fn(theta, u, rho, p), axis=0))
         theta, u, rho, p = H_B_sol(theta, u, rho, p, pmgrad_fn, dt)
         u = gettruncated(u)
-
         theta, u, rho, p = H_A_sol(theta, u, rho, p, dt/2)
         u = gettruncated(u)
         states[i+1,:] = np.concat([theta,u,rho,p], axis=0)
@@ -204,4 +203,28 @@ def get_latent_u(dim_u, seed=0):
     np.random.seed(seed)
     return np.random.normal(size=dim_u)
     
+
+
+def write_pickle_to_tfrecord(pickle_files, tfrecord_filename):
+    """
+    将多个 pickle 文件的数据逐条写入 TFRecord 文件
+    :param pickle_files: pickle 文件路径列表
+    :param tfrecord_filename: 输出的 TFRecord 文件名
+    """
+    with tf.io.TFRecordWriter(tfrecord_filename) as writer:
+        for file_path in pickle_files:
+            print(f"正在处理文件: {file_path}")
+            # 加载一个 pickle 文件
+            with open(file_path, "rb") as f:
+                data = pickle.load(f)
+            
+            # 假设 data 是一个字典，包含 "key1" 和 "key2"
+            num_samples = len(data["states"])  # 数据条数
+
+            # 逐条写入 TFRecord 文件
+            for i in range(num_samples):
+                feature = {k : tf.train.Feature(float_list=tf.train.FloatList(value=data[k][i])) for k in data.keys()}
+                example = tf.train.Example(features=tf.train.Features(feature=feature))
+                writer.write(example.SerializeToString())
     
+    print(f"TFRecord 文件已保存到: {tfrecord_filename}")

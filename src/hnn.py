@@ -28,7 +28,7 @@ class HNN(tf.keras.Model):
         self.acti = utils.choose_acti(acti)
         self.baseline = baseline
         self.field_type = field_type
-        self.M = self.permutation_tensor(input_dim)
+        # self.M = self.permutation_tensor(input_dim)
 
         # Apply orthogonal initialization
         for idx_layer, layer in enumerate(self.hidden_layers + [self.lastlayer]):
@@ -82,7 +82,9 @@ class HNN(tf.keras.Model):
             conservative_field = dF1
         if self.field_type == "solenoidal":
             dF2 = tape.gradient(F2, state)
-            solenoidal_field = tf.matmul(dF2, tf.transpose(self.M))
+            # solenoidal_field = tf.matmul(dF2, tf.transpose(self.M))
+            n = dF2.shape[-1]
+            solenoidal_field = tf.concat([dF2[:,n//2:], -dF2[:,:n//2]], axis=-1)
         del tape
 
         if separate_fields:

@@ -82,8 +82,6 @@ def functions(dist_name):
             dim = len(state)//2
             theta, u, rho, p = state[0:13], state[13:dim], state[dim:dim+13], state[dim+13:]
             beta, mu, logla, logitw1 = theta[0:8], theta[8:10], theta[10:12], theta[12]
-            # part1 = tf.reduce_sum(beta**2/2/100) + tf.reduce_sum(mu**2/2/1) + tf.reduce_sum(logla**2/2/1) + tf.reduce_sum(logitw1**2/2/1) # prior density
-            # part1 = tf.reduce_sum(beta**2/2/100) + tf.reduce_sum(mu**2/2/25) + tf.reduce_sum(logla**2/2/25) + tf.reduce_sum(logitw1**2/2/25) # prior density
             part1 = tf.reduce_sum(theta**2/2/1)
             T, N, n, dim_p = 500, 128, 6, 8
             X = 3*tf.reshape(u, shape=(T,N))
@@ -106,8 +104,6 @@ def functions(dist_name):
             theta, u, rho, p = state[0:13], state[13:dim], state[dim:dim+13], state[dim+13:]
             H_A = tf.reduce_sum(rho**2/2) + tf.reduce_sum(u**2/2) + tf.reduce_sum(p**2/2)
             beta, mu, logla, logitw1 = theta[0:8], theta[8:10], theta[10:12], theta[12]
-            # part1 = tf.reduce_sum(beta**2/2/100) + tf.reduce_sum(mu**2/2/1) + tf.reduce_sum(logla**2/2/1) + tf.reduce_sum(logitw1**2/2/1) # prior density
-            # part1 = tf.reduce_sum(beta**2/2/100) + tf.reduce_sum(mu**2/2/25) + tf.reduce_sum(logla**2/2/25) + tf.reduce_sum(logitw1**2/2/25) # prior density
             part1 = tf.reduce_sum(theta**2/2/1)
             T, N, n, dim_p = 500, 128, 6, 8
             X = 3*tf.reshape(u, shape=(T,N))

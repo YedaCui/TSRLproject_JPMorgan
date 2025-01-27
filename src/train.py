@@ -74,14 +74,18 @@ def train_pm(config):
         }
         return tf.io.parse_single_example(proto, feature_description)
 
-    def load_tfrecord(filename):
+    def load_tfrecord(filename, batch_size, repeat=True):
         dataset = tf.data.TFRecordDataset(filename)
         dataset = dataset.map(parse_tfrecord)
-        
+        if repeat:
+            dataset = dataset.repeat()
+        # dataset = dataset.shuffle(buffer_size=1000)       
+        dataset = dataset.batch(batch_size)
+        dataset = dataset.prefetch(buffer_size=tf.data.AUTOTUNE)
         return dataset
 
-    train_dataset = load_tfrecord(config["path"]+"_train.tfrecord").repeat()
-    test_dataset = load_tfrecord(config["path"]+"_test.tfrecord").repeat()
+    train_dataset = load_tfrecord(config["path"]+"_train.tfrecord", batch_size=config["batch_size"], repeat=True)
+    test_dataset = load_tfrecord(config["path"]+"_test.tfrecord", batch_size=config["batch_size"], repeat=False)
 
     model = hnn.HNN(config["input_dim"], config["num_hidden"], config["num_layers"], config["output_dim"], acti=config["acti"], baseline=config["baseline"], field_type=config["field_type"])
     
@@ -96,19 +100,18 @@ def train_pm(config):
         grads = tape.gradient(loss, model.trainable_variables)
         optimizer.apply_gradients(zip(grads, model.trainable_variables))
     
-    bestloss, bestmodel, train_dist, test_dist = np.inf, None, [], []
+    bestloss, bestmodel = np.inf, None
     for idx_epoch in range(config["train_epoch"]):
         print(f"Begin the {idx_epoch}th training epoch:")
-        for idx_step in range(config["train_step"]):
-            file_path = next(train_file_iter)
-            states, timegrads = load_dict_file(file_path)
+        train_dist, test_dist = [], []
+        for batch in train_dataset.take(config["train_step"]):
+            states, timegrads = batch["states"], batch["timegrads"]
             train_step(states, timegrads)
-
             train_timegrads_hat = model.get_gradient(states)
             train_dist.append(tf.reduce_mean((timegrads - train_timegrads_hat)**2))
-
-            file_path = next(test_file_iter)
-            states, timegrads = load_dict_file(file_path)
+    
+        for batch in test_dataset.take(10000):
+            states, timegrads = batch["states"], batch["timegrads"]
             test_timegrads_hat = model.get_gradient(states)
             test_dist.append(tf.reduce_mean((timegrads - test_timegrads_hat)**2))
 
@@ -126,7 +129,7 @@ if __name__ == "__main__":
     gpus = tf.config.experimental.list_physical_devices('GPU')
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
-    tf.config.set_visible_devices(gpus[0], "GPU")
+    tf.config.set_visible_devices(gpus[2], "GPU")
 
     # config = CONFIGS["LHNN_1DGaussianmixture"] # load the config which records all experiment parameters.
     # config = CONFIGS["LHNN_3DRosenbrock"]

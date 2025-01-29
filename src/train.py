@@ -87,33 +87,48 @@ def train_pm(config):
     train_dataset = load_tfrecord(config["path"]+"_train.tfrecord", batch_size=config["batch_size"], repeat=True)
     test_dataset = load_tfrecord(config["path"]+"_test.tfrecord", batch_size=config["batch_size"], repeat=False)
 
-    model = hnn.HNN(config["input_dim"], config["num_hidden"], config["num_layers"], config["output_dim"], acti=config["acti"], baseline=config["baseline"], field_type=config["field_type"])
-    
+    if "type_NN" not in config.keys() or config["type_NN"] == "HNN":
+        model = hnn.HNN(config["input_dim"], config["num_hidden"], config["num_layers"], config["output_dim"], acti=config["acti"], baseline=config["baseline"], field_type=config["field_type"])
+    elif config["type_NN"] == "PMHNN":
+        model = hnn.PMHNN(config["inputdim_NN"], config["num_hidden"], config["num_layers"], acti=config["acti"])
+    else:
+        raise ValueError(f"Invalid 'type_NN' value: {config.get('type_NN', None)}")
+
     loss_obj = tf.keras.losses.MeanSquaredError()
     optimizer = tf.keras.optimizers.Adam()
-    
+
     @tf.function
-    def train_step(x,y):
+    def train_step(x, y, accumulated_gradients=None):
         with tf.GradientTape() as tape:
             y_pred = model.get_gradient(x)
-            loss = loss_obj(y,y_pred)
-        grads = tape.gradient(loss, model.trainable_variables)
-        optimizer.apply_gradients(zip(grads, model.trainable_variables))
+            loss = loss_obj(y, y_pred)
+        gradients = tape.gradient(loss, model.trainable_variables)
+        if accumulated_gradients is not None:
+            gradients = [g + ag for g, ag in zip(gradients, accumulated_gradients)]
+        return gradients, loss
     
     bestloss, bestmodel = np.inf, None
     for idx_epoch in range(config["train_epoch"]):
         print(f"Begin the {idx_epoch}th training epoch:")
         train_dist, test_dist = [], []
-        for batch in train_dataset.take(config["train_step"]):
+        accumulated_gradients = None
+        for step, batch in enumerate(train_dataset.take(config["train_step"])):
             states, timegrads = batch["states"], batch["timegrads"]
-            train_step(states, timegrads)
-            train_timegrads_hat = model.get_gradient(states)
-            train_dist.append(tf.reduce_mean((timegrads - train_timegrads_hat)**2))
+            accumulated_gradients, loss = train_step(states, timegrads, accumulated_gradients)
+            print(loss)
+            train_dist.append(loss)
+
+            if (step + 1) % config["accumulation_steps"] == 0:
+                accumulated_gradients = [g / config["accumulation_steps"] for g in accumulated_gradients]   
+                optimizer.apply_gradients(zip(accumulated_gradients, model.trainable_variables))
+                accumulated_gradients = None
     
-        for batch in test_dataset.take(10000):
+        for batch in test_dataset.take(config["testset_size"]):
             states, timegrads = batch["states"], batch["timegrads"]
             test_timegrads_hat = model.get_gradient(states)
-            test_dist.append(tf.reduce_mean((timegrads - test_timegrads_hat)**2))
+            test_dist.append(tf.reduce_mean((timegrads-test_timegrads_hat)**2))
+            # test_dist.append(tf.reduce_mean((timegrads[:,len(timegrads[0])//2:len(timegrads[0])//2+13]-test_timegrads_hat[:,len(timegrads[0])//2:len(timegrads[0])//2+13])**2))
+            del test_timegrads_hat
 
         print('Train loss {:.4e} +/- {:.4e}\n test loss {:.4e} +/- {:.4e}'
             .format(np.mean(np.array(train_dist)), np.std(np.array(train_dist))/len(train_dist)**0.5,
@@ -136,10 +151,13 @@ if __name__ == "__main__":
     # config = CONFIGS["LHNN_3DRosenbrock_T100"]
     # config = CONFIGS["LHNN_10DRosenbrock"]
     # config = CONFIGS["LHNN_2DNealsfunnel"]
-    config = CONFIGS["LHNN_pmglmm"]
+    config = CONFIGS["PMHNN_pmglmm"]
     
     # config = CONFIGS["LHNN_ellipticpde"]
     # data = gene_data.get_dataset(**config)
     # print("Finished generating the dataset.")
-    model = train_pm(config)
+    if "pseudo-marginal" in config.keys():
+        model = train_pm(config)
+    else:
+        model = train(config)
     model.save_weights(config["path_model"])

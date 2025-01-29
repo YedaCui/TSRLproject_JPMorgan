@@ -28,7 +28,6 @@ class HNN(tf.keras.Model):
         self.acti = utils.choose_acti(acti)
         self.baseline = baseline
         self.field_type = field_type
-        # self.M = self.permutation_tensor(input_dim)
 
         # Apply orthogonal initialization
         for idx_layer, layer in enumerate(self.hidden_layers + [self.lastlayer]):
@@ -106,6 +105,96 @@ class HNN(tf.keras.Model):
     
     def get_config(self):
         config = super(HNN, self).get_config()
+        config.update({
+            "input_dim": self.input_dim,
+            "num_hidden" : self.num_hidden,
+            "num_layers" : self.num_layers,
+            "output_dim" : self.output_dim
+        })
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
+    
+class PMHNN(tf.keras.Model):
+    """
+    The class PMHNN introduced in the report of the repo.
+    """
+    def __init__(self, input_dim, num_hidden, num_layers, acti="relu",**kwargs):
+        """
+        Args:
+            input_dim : 'int' Integer of the input dimesion of the PMHNN.
+            num_hidden : 'int' the number of neurons.
+            num_layers : 'int' the number of hidden layers.
+        """
+        super(PMHNN, self).__init__(**kwargs)
+        self.num_hidden = num_hidden
+        self.num_layers = num_layers
+        self.hidden_layers = [tf.keras.layers.Dense(num_hidden, activation=None) for idx_layer in range(num_layers)]
+        self.lastlayer = tf.keras.layers.Dense(1, activation=None, use_bias=False)
+        self.acti = utils.choose_acti(acti)
+        self.Z_coe = tf.convert_to_tensor(utils.getZ(), dtype=tf.float32)
+        self.Z = tf.reshape(self.Z_coe,shape=(1, 500, 6*8))
+        self.obs=tf.convert_to_tensor(utils.getglmmdata(), dtype=tf.float32)
+        self.obs = tf.reshape(self.obs,shape=(1, 500, 6))
+
+        # Apply orthogonal initialization
+        for idx_layer, layer in enumerate(self.hidden_layers + [self.lastlayer]):
+            # Build the layer to initialize weights
+            if idx_layer == 0:
+                layer.build((None, input_dim))
+            else:
+                layer.build((None, num_hidden))
+            w_shape = layer.kernel.shape
+            orthogonal_init = tf.keras.initializers.Orthogonal()
+            layer.kernel.assign(orthogonal_init(w_shape))
+            # Initialize bias to zeros (if the layer uses bias)
+            if layer.bias is not None:
+                layer.bias.assign(tf.zeros_like(layer.bias))
+
+    def call(self, state):
+        """
+        Args:
+            state : 'tensor' Combination of position and momentum.
+        """
+        n = state.shape[-1]
+        theta, u = state[:,:13], state[:,13:n//2]
+        u = tf.reshape(u,shape=(len(u), 500, 128))
+        theta = tf.reshape(theta,shape=(len(theta), 1, 13))
+        data_shape = [max(dims) for dims in zip(self.obs.shape, self.Z.shape, theta.shape, u.shape)]
+        
+        x = tf.concat([tf.broadcast_to(self.obs, shape=data_shape[:-1]+[self.obs.shape[-1]]),
+                       tf.broadcast_to(self.Z, shape=data_shape[:-1]+[self.Z.shape[-1]]),
+                       tf.broadcast_to(theta, shape=data_shape[:-1]+[theta.shape[-1]]),
+                       tf.broadcast_to(u, shape=data_shape[:-1]+[u.shape[-1]])], axis=-1)
+        x = tf.reshape(x, shape=[-1, x.shape[-1]])
+        for layer in self.hidden_layers:
+            x = self.acti(layer(x))
+        y = self.lastlayer(x)
+        y = tf.reshape(y, shape=data_shape[:-1])
+        y = tf.reduce_sum(y, axis=-1, keepdims=True)
+        y = y + tf.reduce_sum(tf.squeeze(theta,1)**2/2, axis=-1, keepdims=True)
+        return y
+
+    def get_gradient(self, state):
+        """
+        Calculate the gradient w.r.t. the state by the neural network.
+
+        Args:
+            state : 'tensor' Combination of position and momentum.
+        """
+        
+        with tf.GradientTape(watch_accessed_variables=False) as tape:
+            tape.watch(state)
+            F = self.call(state)
+            dF = tape.gradient(F, state)
+            n = dF.shape[-1]
+            grads = tf.concat([dF[:,n//2:], -dF[:,:n//2]], axis=-1)
+        return grads
+    
+    def get_config(self):
+        config = super(PMHNN, self).get_config()
         config.update({
             "input_dim": self.input_dim,
             "num_hidden" : self.num_hidden,

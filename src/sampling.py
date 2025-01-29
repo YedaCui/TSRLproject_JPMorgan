@@ -1,11 +1,9 @@
 import functions
-import hnn
+from . import hnn, mcmc, utils
 from configs import CONFIGS
-import mcmc
 import numpy as np
 import tensorflow as tf
 import pickle
-import utils
 
 def sampling(config_name, sampler_type, initial_state, num_samples, burnin, chains=1, epsilon=0.05, model_path=None, seed=0, sample_path=None, **kwargs):
     """

@@ -1,11 +1,8 @@
 import numpy as np
 import tensorflow as tf
-import gene_data
-from configs import CONFIGS
-import hnn
+from . import gene_data, hnn
+from .configs import CONFIGS
 import random
-import pickle
-import os
 
 def train(config):
     """
@@ -144,7 +141,7 @@ if __name__ == "__main__":
     gpus = tf.config.experimental.list_physical_devices('GPU')
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
-    tf.config.set_visible_devices(gpus[2], "GPU")
+    tf.config.set_visible_devices(gpus[0], "GPU")
 
     # config = CONFIGS["LHNN_1DGaussianmixture"] # load the config which records all experiment parameters.
     # config = CONFIGS["LHNN_3DRosenbrock"]

@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 from scipy.stats import uniform, norm
-import utils
+from . import utils
 
 
 class MCMC(ABC):

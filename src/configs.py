@@ -245,7 +245,7 @@ CONFIGS = {
         "dt" : 0.005,
         "num_int" : 2000,
         "inputdim_NN" : 67+128,
-        "num_hidden": 500,
+        "num_hidden": 2000,
         "num_layers": 3,
         "acti" : "tanh",
         "baseline" : False,
@@ -254,7 +254,7 @@ CONFIGS = {
         "batch_size" : 8,
         "accumulation_steps" : 64,
         "testset_size" : 1000,
-        "path_model" : "/home/ycui/Documents/TSRLproject_JPMorgan/models/PMHNN_pmglmmB_tanh_width500.weights.h5",
+        "path_model" : "/home/ycui/Documents/TSRLproject_JPMorgan/models/PMHNN_pmglmmB_tanh_width2000.weights.h5",
     },
     "LHNN_pmglmm" : {
         "seed" : 0,

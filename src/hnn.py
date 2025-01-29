@@ -1,5 +1,5 @@
 import tensorflow as tf
-import utils
+from . import utils
 
 class HNN(tf.keras.Model):
     """
@@ -129,6 +129,7 @@ class PMHNN(tf.keras.Model):
             num_layers : 'int' the number of hidden layers.
         """
         super(PMHNN, self).__init__(**kwargs)
+        self.input_dim = input_dim
         self.num_hidden = num_hidden
         self.num_layers = num_layers
         self.hidden_layers = [tf.keras.layers.Dense(num_hidden, activation=None) for idx_layer in range(num_layers)]
@@ -199,7 +200,6 @@ class PMHNN(tf.keras.Model):
             "input_dim": self.input_dim,
             "num_hidden" : self.num_hidden,
             "num_layers" : self.num_layers,
-            "output_dim" : self.output_dim
         })
         return config
 

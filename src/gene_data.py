@@ -1,7 +1,7 @@
 import numpy as np
-import utils
+from . import utils
 import pickle
-from functions import functions
+from .functions import functions
 import scipy
 import os
 

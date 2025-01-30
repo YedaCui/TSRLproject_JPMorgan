@@ -150,10 +150,6 @@ def H_B_sol(theta, u, rho, p, pmgrad_fn, dt):
     p1 = p + dt * grad_p
     return theta1, u1, rho1, p1
 
-# def removezeros(a, threshold):
-#     a[np.abs(a) < threshold] = 0
-#     return a
-
 def getpmgrad_fn(H_B):
     """
     Get the \partial rho / \partial t and \partial p / \partial t in equation (16) of Alenlov 2021.

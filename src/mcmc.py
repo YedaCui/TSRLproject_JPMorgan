@@ -42,6 +42,7 @@ class MCMC(ABC):
 
         # Sampling loop for each chain
         for idx_chain in range(self.chains):
+            self.prep_chain()
             self.idx_chain = idx_chain
             print(f"Starting chain {idx_chain+1}/{self.chains}.")
             # Initialize the state
@@ -292,7 +293,7 @@ class NUTS(MCMC):
         v : direction {-1, 1}.
         j : deepth of the tree.
         H_ini : Hamiltonian value of initial state.
-        only_grad : {1 , 0} if 1, only use graduation for leapforg integration.
+        only_grad : {1 , 0} if 1, only use auto graduation's gradients for leapforg integration.
         """
         if j == 0:
             state = np.concat([pos,mom],axis=0)

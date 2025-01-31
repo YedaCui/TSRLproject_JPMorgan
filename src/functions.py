@@ -9,8 +9,6 @@ def functions(dist_name):
     Args:
         dist_name : 'str' the name of the disribution.
     """
-    
-    #******** 1D Gaussian Mixture #********
     if dist_name == '1D_Gauss_mix':
         def H_function(state):
             q, p = state[0], state[1]
@@ -20,7 +18,6 @@ def functions(dist_name):
             term1 = -tf.math.log(0.5*(tf.math.exp(-(q-mu1)**2/(2*sigma**2)))+0.5*(tf.math.exp(-(q-mu2)**2/(2*sigma**2))))
             H = term1 + p**2/2 # Normal PDF
             return H
-    #*********** nD_Rosenbrock #**************
     elif dist_name == 'nD_Rosenbrock':
         def H_function(state):
             dim = len(state)//2

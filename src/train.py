@@ -6,13 +6,18 @@ import random
 
 def train(config):
     """
-    The training process.
+    This function trains a neural network HNN to approximate the Hamiltonian gradients.
+
+    Args:
+        config : "dict" Configuration dictionary containing training parameters.
+    
+    Returns:
+        bestmodel: The model with the lowest test loss during training.
     """
 
     np.random.seed(config["seed"])
     tf.random.set_seed(config["seed"])
     random.seed(config["seed"])
-    
     
     data = gene_data.get_dataset(**config)
     # arrange data
@@ -57,7 +62,18 @@ def train(config):
 
 def train_pm(config):
     """
-    The training process of PMHMC.
+    The training process for Pseudo-Marginal Hamiltonian Monte Carlo (PMHMC).
+    
+    This function trains a neural network (HNN or PMHNN) to approximate the Hamiltonian
+    gradients. Due to the high-dimensional nature of the input data, the entire dataset
+    cannot fit into memory or be processed in a single step. Instead, TFRecord files are used
+    for efficient data streaming and batching.
+
+    Args:
+        config : "dict" Configuration dictionary containing training parameters.
+    
+    Returns:
+        bestmodel: The model with the lowest test loss during training.
     """
 
     np.random.seed(config["seed"])
@@ -72,11 +88,21 @@ def train_pm(config):
         return tf.io.parse_single_example(proto, feature_description)
 
     def load_tfrecord(filename, batch_size, repeat=True):
+        """
+        Loads and prepares a TFRecord dataset.
+
+        Args:
+            filename (str): Path to the TFRecord file.
+            batch_size (int): Number of examples per batch.
+            repeat (bool): Whether to loop over the dataset indefinitely (for training).
+        
+        Returns:
+            tf.data.Dataset: Prepared dataset.
+        """
         dataset = tf.data.TFRecordDataset(filename)
         dataset = dataset.map(parse_tfrecord)
         if repeat:
-            dataset = dataset.repeat()
-        # dataset = dataset.shuffle(buffer_size=1000)       
+            dataset = dataset.repeat()  
         dataset = dataset.batch(batch_size)
         dataset = dataset.prefetch(buffer_size=tf.data.AUTOTUNE)
         return dataset
@@ -101,6 +127,7 @@ def train_pm(config):
             loss = loss_obj(y, y_pred)
         gradients = tape.gradient(loss, model.trainable_variables)
         if accumulated_gradients is not None:
+            # Accumulate gradients for gradient accumulation
             gradients = [g + ag for g, ag in zip(gradients, accumulated_gradients)]
         return gradients, loss
     
@@ -112,19 +139,17 @@ def train_pm(config):
         for step, batch in enumerate(train_dataset.take(config["train_step"])):
             states, timegrads = batch["states"], batch["timegrads"]
             accumulated_gradients, loss = train_step(states, timegrads, accumulated_gradients)
-            print(loss)
             train_dist.append(loss)
-
+            # Apply accumulated gradients after a specified number of steps
             if (step + 1) % config["accumulation_steps"] == 0:
                 accumulated_gradients = [g / config["accumulation_steps"] for g in accumulated_gradients]   
                 optimizer.apply_gradients(zip(accumulated_gradients, model.trainable_variables))
-                accumulated_gradients = None
-    
+                accumulated_gradients = None # Reset accumulated gradients
+        # Evaluate on the test dataset
         for batch in test_dataset.take(config["testset_size"]):
             states, timegrads = batch["states"], batch["timegrads"]
             test_timegrads_hat = model.get_gradient(states)
             test_dist.append(tf.reduce_mean((timegrads-test_timegrads_hat)**2))
-            # test_dist.append(tf.reduce_mean((timegrads[:,len(timegrads[0])//2:len(timegrads[0])//2+13]-test_timegrads_hat[:,len(timegrads[0])//2:len(timegrads[0])//2+13])**2))
             del test_timegrads_hat
 
         print('Train loss {:.4e} +/- {:.4e}\n test loss {:.4e} +/- {:.4e}'
@@ -143,7 +168,7 @@ if __name__ == "__main__":
         tf.config.experimental.set_memory_growth(gpu, True)
     tf.config.set_visible_devices(gpus[0], "GPU")
 
-    # config = CONFIGS["LHNN_1DGaussianmixture"] # load the config which records all experiment parameters.
+    # config = CONFIGS["LHNN_1DGaussianmixture"]
     # config = CONFIGS["LHNN_3DRosenbrock"]
     # config = CONFIGS["LHNN_3DRosenbrock_T100"]
     # config = CONFIGS["LHNN_10DRosenbrock"]
@@ -151,7 +176,7 @@ if __name__ == "__main__":
     config = CONFIGS["PMHNN_pmglmm"]
     
     # config = CONFIGS["LHNN_ellipticpde"]
-    # data = gene_data.get_dataset(**config)
+    # gene_data.get_dataset(**config)
     # print("Finished generating the dataset.")
     if "pseudo-marginal" in config.keys():
         model = train_pm(config)

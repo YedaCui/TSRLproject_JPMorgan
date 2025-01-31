@@ -1,3 +1,5 @@
+# Code by Yeda CUI at department of SEEM of The Chinese Unviersity of Hong Kong
+
 import tensorflow as tf
 from . import utils
 
@@ -12,6 +14,7 @@ class HNN(tf.keras.Model):
             num_hidden : 'int' the number of neurons.
             num_layers : 'int' the number of hidden layers.
             output_dim : 'int' the output dimension.
+            acti : 'str' the type of activation function.
             nn : tf.keras.Model subclass whose call function takes an argument "state" with shape (num_sample, num_dimenson) 
             and returns tensor with shape (num_sample, 2) (i.e. HNN by Greydanus et al 2019) 
             or (num_sample, input_dim) (i.e. Latent HNN by Dhulipala et al 2022).
@@ -81,7 +84,6 @@ class HNN(tf.keras.Model):
             conservative_field = dF1
         if self.field_type == "solenoidal":
             dF2 = tape.gradient(F2, state)
-            # solenoidal_field = tf.matmul(dF2, tf.transpose(self.M))
             n = dF2.shape[-1]
             solenoidal_field = tf.concat([dF2[:,n//2:], -dF2[:,:n//2]], axis=-1)
         del tape
@@ -90,18 +92,6 @@ class HNN(tf.keras.Model):
             return [conservative_field, solenoidal_field]
         else:
             return  conservative_field + solenoidal_field
-
-        
-    def permutation_tensor(self, n):
-        """
-        Generate the matrix [[0, I], [-I, 0]].
-        """
-        M = tf.eye(n, dtype=tf.float32)
-        n_half = n // 2
-        M_upper = M[:n_half, :]
-        M_lower = M[n_half:, :]
-        M = tf.concat([M_lower, -M_upper], axis=0)
-        return M
     
     def get_config(self):
         config = super(HNN, self).get_config()
@@ -119,26 +109,35 @@ class HNN(tf.keras.Model):
     
 class PMHNN(tf.keras.Model):
     """
-    The class PMHNN introduced in the report of the repo.
+    Pseudo-Marginal Hamiltonian Neural Network (PMHNN) introduced in the report of this repo.
+    
+    This model uses a neural network to approximate function to learn the function from 
+    observation, coefficients, marginal variables and latent variable to the unbaised approximation of negative log density function
     """
-    def __init__(self, input_dim, num_hidden, num_layers, acti="relu",**kwargs):
+    def __init__(self, input_dim, num_hidden, num_layers, acti="relu", dim_marginal=13, coef=utils.getZ(), obs=utils.getglmmdata(), **kwargs):
         """
         Args:
             input_dim : 'int' Integer of the input dimesion of the PMHNN.
             num_hidden : 'int' the number of neurons.
             num_layers : 'int' the number of hidden layers.
+            acti : 'str' the type of activation function.
+            dim_marginal : int' Integer number of the dimension of the marginal distribution.
+            coef : array-like with shape (number of observation, *)
+            obs : array-like with shape (number of observation, dim of observation)
         """
         super(PMHNN, self).__init__(**kwargs)
         self.input_dim = input_dim
+        self.dim_marginal = dim_marginal
         self.num_hidden = num_hidden
         self.num_layers = num_layers
         self.hidden_layers = [tf.keras.layers.Dense(num_hidden, activation=None) for idx_layer in range(num_layers)]
         self.lastlayer = tf.keras.layers.Dense(1, activation=None, use_bias=False)
         self.acti = utils.choose_acti(acti)
-        self.Z_coe = tf.convert_to_tensor(utils.getZ(), dtype=tf.float32)
-        self.Z = tf.reshape(self.Z_coe,shape=(1, 500, 6*8))
-        self.obs=tf.convert_to_tensor(utils.getglmmdata(), dtype=tf.float32)
-        self.obs = tf.reshape(self.obs,shape=(1, 500, 6))
+        self.T = obs.shape[0]
+        self.obs = tf.convert_to_tensor(obs, dtype=tf.float32)
+        self.obs = tf.expand_dims(self.obs, axis=0)
+        self.coef = tf.convert_to_tensor(coef, dtype=tf.float32)
+        self.coef = tf.reshape(self.coef,shape=(1, self.T, -1))
 
         # Apply orthogonal initialization
         for idx_layer, layer in enumerate(self.hidden_layers + [self.lastlayer]):
@@ -160,13 +159,13 @@ class PMHNN(tf.keras.Model):
             state : 'tensor' Combination of position and momentum.
         """
         n = state.shape[-1]
-        theta, u = state[:,:13], state[:,13:n//2]
-        u = tf.reshape(u,shape=(len(u), 500, 128))
-        theta = tf.reshape(theta,shape=(len(theta), 1, 13))
-        data_shape = [max(dims) for dims in zip(self.obs.shape, self.Z.shape, theta.shape, u.shape)]
+        theta, u = state[:,:self.dim_marginal], state[:,self.dim_marginal:n//2]
+        u = tf.reshape(u,shape=(len(u), self.T, -1))
+        theta = tf.reshape(theta,shape=(len(theta), 1, -1))
+        data_shape = [max(dims) for dims in zip(self.obs.shape, self.coef.shape, theta.shape, u.shape)]
         
         x = tf.concat([tf.broadcast_to(self.obs, shape=data_shape[:-1]+[self.obs.shape[-1]]),
-                       tf.broadcast_to(self.Z, shape=data_shape[:-1]+[self.Z.shape[-1]]),
+                       tf.broadcast_to(self.coef, shape=data_shape[:-1]+[self.coef.shape[-1]]),
                        tf.broadcast_to(theta, shape=data_shape[:-1]+[theta.shape[-1]]),
                        tf.broadcast_to(u, shape=data_shape[:-1]+[u.shape[-1]])], axis=-1)
         x = tf.reshape(x, shape=[-1, x.shape[-1]])

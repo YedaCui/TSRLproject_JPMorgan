@@ -18,7 +18,7 @@ class MCMC(ABC):
             initial_state : 'array' like object.
             num_samples : 'int' Integer number of samples.
             burnin : 'int' Integer number of burn-in steps.
-            cahins : 'int' Integer number of independent chains.
+            chains : 'int' Integer number of independent chains.
         """
         super(MCMC, self).__init__(**kwargs)
         self.initial_state = initial_state

@@ -2,6 +2,7 @@ import numpy as np
 from . import utils
 import pickle
 from .functions import functions
+import tensorflow as tf
 import scipy
 import os
 
@@ -12,7 +13,7 @@ def get_dataset(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, 
     Args:
         seed : random seed.
         load : 'bool' If True, load data from path.
-        path : 'str' or None. If not None, load data from the path.
+        path : 'str' The path to save or load the data.
         num_samples : 'int' Number of total samples.
         per_train : 'float' Percentage of train dataset.
         input_dim : 'int' Integer number of input dimension.
@@ -26,8 +27,7 @@ def get_dataset(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, 
             data = pickle.load(f)
         print("Successfully loaded data")
         return data
-    
-    data = {'meta': locals()} # record all the augments.
+    data={}
     np.random.seed(seed)
     states, timegrads = [],[]
     initial_state = np.zeros(input_dim)
@@ -50,20 +50,17 @@ def get_dataset(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, 
     for k in ['states', 'timegrads']:
         split_data['train_' + k], split_data['test_' + k] = data[k][:split_idx], data[k][split_idx:]
     data = split_data
-
     with open(path, 'wb') as f:
         pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
-    
     return data
 
-def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.8, initial_marginal=utils.get_marginal_initial(), dim_u=128, dist_name_B='pmglmmB', dt=0.25, num_int=4, **kwargs):
+def get_dataset_pm(seed=0, path=None, num_samples=10000, per_train=0.8, initial_marginal=utils.get_marginal_initial(), dim_u=128, dist_name_B='pmglmmB', dt=0.25, num_int=4, **kwargs):
     """
     Get the dataset for traing and testing.
 
     Args:
         seed : random seed.
-        load : 'bool' If True, load data from path.
-        path : 'str' The path to load the data.
+        path : 'str' The path to save the data.
         num_samples : 'int' Number of total samples.
         per_train : 'float' Percentage of train dataset.
         initial_marginal : 'np.array' The initial marginal state.
@@ -72,10 +69,6 @@ def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.
         dt : 'float' The integration time step.
         num_int : 'int' Number of integrator step.
     """
-    
-    if not os.path.exists(path):
-        os.makedirs(path)
-    
     np.random.seed(seed)
     dim_marginal = len(initial_marginal)
     input_dim = 2*(dim_marginal+dim_u)
@@ -83,24 +76,41 @@ def get_dataset_pm(seed=0, load=True, path=None, num_samples=10000, per_train=0.
     initial_state[:dim_marginal] = initial_marginal
     initial_state[dim_marginal:dim_marginal+dim_u] = utils.get_latent_u(dim_u)
 
+    def serialize_example(states, timegrads):
+        """
+        Create a serialized example containing states and timegrads.
+
+        Args:
+            states (np.array): The states array.
+            timegrads (np.array): The time gradients array.
+
+        Returns:
+            Serialized TensorFlow Example.
+        """
+        feature = {
+            "states": tf.train.Feature(float_list=tf.train.FloatList(value=states)),
+            "timegrads": tf.train.Feature(float_list=tf.train.FloatList(value=timegrads)),
+        }
+        # Create a Features message using tf.train.Example
+        example_proto = tf.train.Example(features=tf.train.Features(feature=feature))
+        return example_proto.SerializeToString()
+
     pmgrad_fn = utils.getpmgrad_fn(functions(dist_name_B)) # Get the timegrad function based on the distribution name.
-    for idx_sample in range(num_samples):
-        print(f"Begin to generate the {idx_sample}th sample.")
-        data = {}
-        initial_state[input_dim//2:] = np.random.normal(size=input_dim//2) # initialize the momentum.
-        state, state_for_grad, timegrad  = utils.pmintegrator(initial_state[0:dim_marginal],
-                                                              initial_state[dim_marginal:dim_marginal+dim_u],
-                                                              initial_state[dim_marginal+dim_u:2*dim_marginal+dim_u],
-                                                              initial_state[2*dim_marginal+dim_u:],
-                                                              pmgrad_fn, dt, num_int, require_grads=True)
-        data['states'] = state_for_grad
-        data['timegrads'] = timegrad
-        # make a train/test split
-        split_idx = int(len(data['states']) * per_train)
-        with open(path+f"/train_{idx_sample}.obj", 'wb') as f:
-            pickle.dump({k: data[k][:split_idx] for k in ['states', 'timegrads']}, f, protocol=pickle.HIGHEST_PROTOCOL)
-        with open(path+f"/test_{idx_sample}.obj", 'wb') as f:
-            pickle.dump({k: data[k][split_idx:] for k in ['states', 'timegrads']}, f, protocol=pickle.HIGHEST_PROTOCOL)
-        
-        initial_state[0:input_dim//2] = state[-1,0:input_dim//2] # update the initial_state
-    return
+    with tf.io.TFRecordWriter(path+"_train.tfrecord") as train_writer, tf.io.TFRecordWriter(path+"_test.tfrecord") as test_writer:
+        for idx_sample in range(num_samples):
+            print(f"Begin to generate the {idx_sample}th sample.")
+            initial_state[input_dim//2:] = np.random.normal(size=input_dim//2) # initialize the momentum.
+            state, state_for_grad, timegrad  = utils.pmintegrator(initial_state[0:dim_marginal],
+                                                                initial_state[dim_marginal:dim_marginal+dim_u],
+                                                                initial_state[dim_marginal+dim_u:2*dim_marginal+dim_u],
+                                                                initial_state[2*dim_marginal+dim_u:],
+                                                                pmgrad_fn, dt, num_int, require_grads=True)
+            # Training/testing split index
+            split_idx = int(len(timegrad) * per_train)
+            for idx in range(split_idx):
+                train_serialized = serialize_example(state_for_grad[idx], timegrad[idx])
+                train_writer.write(train_serialized)
+            for idx in range(split_idx, len(state_for_grad)):
+                test_serialized = serialize_example(state_for_grad[idx], timegrad[idx])
+                test_writer.write(test_serialized)
+            initial_state[0:input_dim//2] = state[-1,0:input_dim//2] # update the initial_state

@@ -1,3 +1,5 @@
+# Code by Yeda CUI at department of SEEM of The Chinese Unviersity of Hong Kong
+
 from . import hnn, mcmc, utils, functions
 from .configs import CONFIGS
 import numpy as np
@@ -6,7 +8,27 @@ import pickle
 
 def sampling(config_name, sampler_type, initial_state, num_samples, burnin, chains=1, epsilon=0.05, model_path=None, seed=0, sample_path=None, **kwargs):
     """
-    Sampling by MCMC.
+    Perform sampling using MCMC methods.
+
+    This function initializes and runs an MCMC sampler (e.g., HMC, NUTS, PMHMC) based on the provided configuration
+    and sampler type. If a pre-trained Neural Network model is provided, it will be used to approximate the time gradients
+    during the sampling process.
+
+    Args:
+        config_name (str): Name of the configuration to use. This is used to fetch parameters from the global `CONFIGS`.
+        sampler_type (str): Type of sampler to use. Supported types are "HMC", "NUTS", and "PMHMC".
+        initial_state (array-like): Initial state for the sampler (e.g., position and momentum).
+        num_samples (int): Number of samples to generate.
+        burnin (int): Number of burn-in samples to discard.
+        chains (int): Number of chains to run in parallel. Default is 1.
+        epsilon (float): Step size for integration.
+        model_path (str, optional): Path to a pre-trained neural network model file. If provided, the model will be loaded.
+        seed (int): Random seed for reproducibility. Default is 0.
+        sample_path (str, optional): Path to a file containing precomputed samples. If provided, the sampler will load these
+                                     samples instead of running the MCMC process.
+
+    Returns:
+        sampler (object): The MCMC sampler object after sampling.
     """
     config = CONFIGS[config_name]
     if model_path:
@@ -31,6 +53,7 @@ def sampling(config_name, sampler_type, initial_state, num_samples, burnin, chai
         sampler.samples = data_samples["samples"]
         sampler.numgrad = data_samples["numgrad"]
         sampler.monitor = data_samples["monitor"]
+        sampler.accept = data_samples["accept"]
     return sampler
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+# Code by Yeda CUI at department of SEEM of The Chinese Unviersity of Hong Kong
+
 import numpy as np
 import tensorflow as tf
 from scipy.interpolate import RegularGridInterpolator
@@ -19,7 +21,6 @@ def leapfrog(get_acceleration, initial_state, dt, num_lf):
     anew = get_acceleration(initial_state) # Initialize the acceleration.
     for idx_step in range(1, num_lf+1):
         aold = anew
-        
         states[idx_step,0:dim//2] = states[idx_step-1,0:dim//2] + dt * states[idx_step-1,dim//2:] + 0.5 * dt**2 * aold # Update the postion.
         anew = get_acceleration(states[idx_step,:]) # Update the acceleration.
         states[idx_step,dim//2:] = states[idx_step-1,dim//2:] + 0.5 * dt * (aold + anew) # Update the momentum.
@@ -42,20 +43,36 @@ def choose_acti(acti):
 
 def get_timegrad_fn(H_function):
     """
-    Returns the timegrad_fn which takes an argument 'state' and return the \partial state / \partial t at this state.
+    Returns a function `timegrad_fn` that computes the time derivative of the state 
+    (\partial state / \partial t) for a given Hamiltonian system.
 
     Args:
-        H_function : python callable which takes an argument "state" and returns the log-density.
+        H_function : callable
+            A Python callable representing the Hamiltonian function. It takes 
+            a state `state` as input and returns the Hamiltonian value (log-density).
     """
     def timegrad_fn(state):
-        # Calculate the \partial state / \partial t at this state.
+        """
+        Computes the time derivative of the state (\partial state / \partial t) 
+        based on the Hamiltonian system equations.
+
+        Args:
+            state : array-like
+                A numpy array or TensorFlow tensor representing the current state 
+                (positions and momenta concatenated).
+
+        Returns:
+            timegrad : numpy array
+                The time derivative of the state as a numpy array, where:
+                [d(position)/dt, d(momentum)/dt].
+        """
         state = tf.convert_to_tensor(state)
         with tf.GradientTape() as tape:
             tape.watch(state)
             H = H_function(state)
         grad = tape.gradient(H,state)
         dim = len(grad)
-        return np.concat([grad[dim//2:], -grad[0:dim//2]])
+        return np.concat([grad[dim//2:], -grad[0:dim//2]]) # (d(position)/dt, d(momentum)/dt) =  (∂H/∂momentum, -∂H/∂position)
     return timegrad_fn
 
 
@@ -109,6 +126,9 @@ def get_pdef(seed=0):
     return fval, (x,y, fg)
 
 def getZ(seed=0, T=500, n=6, p=8):
+    """
+    Generate Z from standard normal distribution in the general linear mixture model of section 4.3 in Alenlov 2021.
+    """
     np.random.seed(seed)
     return np.random.normal(size=(T,n,p))
 
@@ -126,12 +146,16 @@ def getglmmdata(seed=0, T=500, w = np.array([0.8,0.2]), mu = np.array([0,3]), la
     Y = np.random.binomial(1, p=p)
     return Y
 
-def gettruncated(u):
-    return np.clip(u, -30, 30)
-
 def H_A_sol(theta, u, rho, p, dt):
     """
     Get the explicit solution of Hamiltonian A in equation (17) of Alenlov 2021.
+
+    Args:
+        theta : array Position variable for Hamiltonian dynamics.
+        u : array Auxiliary momentum variable for `theta`.
+        rho : array Additional position variable for Hamiltonian dynamics.
+        p : array Auxiliary momentum variable for `rho`.
+        dt : float Time step for integration.
     """
     theta1 = theta + dt * rho
     rho1 = rho
@@ -142,6 +166,16 @@ def H_A_sol(theta, u, rho, p, dt):
 def H_B_sol(theta, u, rho, p, pmgrad_fn, dt):
     """
     Get the soltion of Hamiltonian B in equation (18) of Alenlov 2021.
+
+    Args:
+        theta : array Position variable for Hamiltonian dynamics.
+        u : array Auxiliary momentum variable for `theta`.
+        rho : array Additional position variable for Hamiltonian dynamics.
+        p : array Auxiliary momentum variable for `rho`.
+        pmgrad_fn : callable A function that computes the gradients of the Hamiltonian B 
+                              with respect to `rho` and `p`.
+        dt : float Time step for integration.
+        num_int : int Number of integration steps.
     """
     grad_rho, grad_p = pmgrad_fn(theta, u, rho, p)
     theta1 = theta
@@ -155,6 +189,13 @@ def getpmgrad_fn(H_B):
     Get the \partial rho / \partial t and \partial p / \partial t in equation (16) of Alenlov 2021.
     """
     def pmgrad_fn(theta, u, rho, p):
+        """
+        Args:
+            theta : array Position variable for Hamiltonian dynamics.
+            u : array Auxiliary momentum variable for `theta`.
+            rho : array Additional position variable for Hamiltonian dynamics.
+            p : array Auxiliary momentum variable for `rho`.
+        """
         state = tf.convert_to_tensor(tf.concat([theta,u,rho,p],axis=0))
         with tf.GradientTape() as tape:
             tape.watch(state)
@@ -167,24 +208,52 @@ def getpmgrad_fn(H_B):
 
 def pmintegrator(theta,u,rho,p, pmgrad_fn, dt, num_int, require_grads=False):
     """
-    Implement the splitting operator pseudo marginal HMC integrator in Alenlov 2021.
+    Implement the splitting operator pseudo-marginal HMC integrator as described in Alenlov 2021.
     
+    The function integrates the system using a splitting method. It alternates between 
+    solving for Hamiltonian A (H_A) and Hamiltonian B (H_B) over the given number of 
+    integration steps, `num_int`.
+
     Args:
-        require_grads : 'bool' If True, return the time gradients of Hamiltian B at each points.
+        theta : array Position variable for Hamiltonian dynamics.
+        u : array Auxiliary momentum variable for `theta`.
+        rho : array Additional position variable for Hamiltonian dynamics.
+        p : array Auxiliary momentum variable for `rho`.
+        pmgrad_fn : callable A function that computes the gradients of the Hamiltonian B 
+                              with respect to `rho` and `p`.
+        dt : float Time step for integration.
+        num_int : int Number of integration steps.
+        require_grads : bool If True, returns the gradients of Hamiltonian B at each 
+                              integration step for diagnostic purposes.
+
+    Returns:
+        states : array An array of shape (num_int + 1, len(theta) + len(u) + len(rho) + len(p))
+                        containing the state vectors at each integration step.
+        If `require_grads` is True:
+            states_for_grads (array): An array containing the state vectors where gradients were computed.
+            time_grads (array): An array of gradients of Hamiltonian B at each step.
+
+    Integration Details:
+        1. The function uses a symmetric splitting operator:
+            - First, solve for H_A for half a time step (`dt/2`).
+            - Then, solve for H_B for a full time step (`dt`).
+            - Finally, solve for H_A for another half time step (`dt/2`).
+        2. At each step, the auxiliary variable `u` is clipped to avoid excessively large values.
+        3. The system state is stored at each step for tracking.
     """
     states = np.zeros((num_int+1, len(np.concat([theta,u,rho,p], axis=0))))
     states[0,:] = np.concat([theta,u,rho,p], axis=0)
     states_for_grads, time_grads = [],[]
     for i in range(num_int):
         theta, u, rho, p = H_A_sol(theta, u, rho, p, dt/2)
-        u = gettruncated(u)
+        u = np.clip(u, -30, 30)
         if require_grads:
             states_for_grads.append(np.concat([theta,u,rho,p], axis=0))
             time_grads.append(np.concat(pmgrad_fn(theta, u, rho, p), axis=0))
         theta, u, rho, p = H_B_sol(theta, u, rho, p, pmgrad_fn, dt)
-        u = gettruncated(u)
+        u = np.clip(u, -30, 30)
         theta, u, rho, p = H_A_sol(theta, u, rho, p, dt/2)
-        u = gettruncated(u)
+        u = np.clip(u, -30, 30)
         states[i+1,:] = np.concat([theta,u,rho,p], axis=0)
     if require_grads:
         return states, np.stack(states_for_grads), np.concat([np.zeros((len(time_grads), len(theta)+len(u))), np.stack(time_grads)],axis=1)
@@ -192,35 +261,18 @@ def pmintegrator(theta,u,rho,p, pmgrad_fn, dt, num_int, require_grads=False):
         return states
 
 def get_marginal_initial():
+    """
+    Get the initial marginal variables for PMHMC in section 4.3 of Alenlov 2021.
+    """
     return np.array([0.5838, 0.3805, -1.5062, -0.0442, 0.4717, -0.1435, 0.6371, -0.0522, 0, 0, 1, 1, 0.5])
     # return np.array([0.5838, 0.3805, -1.5062, -0.0442, 0.4717, -0.1435, 0.6371, -0.0522, 0, 3, np.log(10), np.log(3), 0.8])
 
 def get_latent_u(dim_u, seed=0):
+    """
+    Get the initial u variables for PMHMC in section 4.3 of Alenlov 2021.
+    
+    Args:
+        dim_u : int Number of the dimension of u.
+    """
     np.random.seed(seed)
     return np.random.normal(size=dim_u)
-    
-
-
-def write_pickle_to_tfrecord(pickle_files, tfrecord_filename):
-    """
-    将多个 pickle 文件的数据逐条写入 TFRecord 文件
-    :param pickle_files: pickle 文件路径列表
-    :param tfrecord_filename: 输出的 TFRecord 文件名
-    """
-    with tf.io.TFRecordWriter(tfrecord_filename) as writer:
-        for file_path in pickle_files:
-            print(f"正在处理文件: {file_path}")
-            # 加载一个 pickle 文件
-            with open(file_path, "rb") as f:
-                data = pickle.load(f)
-            
-            # 假设 data 是一个字典，包含 "key1" 和 "key2"
-            num_samples = len(data["states"])  # 数据条数
-
-            # 逐条写入 TFRecord 文件
-            for i in range(num_samples):
-                feature = {k : tf.train.Feature(float_list=tf.train.FloatList(value=data[k][i])) for k in data.keys()}
-                example = tf.train.Example(features=tf.train.Features(feature=feature))
-                writer.write(example.SerializeToString())
-    
-    print(f"TFRecord 文件已保存到: {tfrecord_filename}")

@@ -117,7 +117,11 @@ def train_pm(config):
     else:
         raise ValueError(f"Invalid 'type_NN' value: {config.get('type_NN', None)}")
 
-    loss_obj = tf.keras.losses.MeanSquaredError()
+    # loss_obj = tf.keras.losses.MeanSquaredError()
+    def loss_obj(y, y_pred):
+        loss = (y-y_pred)**2
+        loss = loss / (tf.math.reduce_std(loss, axis=0) + 1e-8)
+        return tf.reduce_mean(loss)
     optimizer = tf.keras.optimizers.Adam()
 
     @tf.function
@@ -166,7 +170,7 @@ if __name__ == "__main__":
     gpus = tf.config.experimental.list_physical_devices('GPU')
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
-    tf.config.set_visible_devices(gpus[0], "GPU")
+    tf.config.set_visible_devices(gpus[2], "GPU")
 
     # config = CONFIGS["LHNN_1DGaussianmixture"]
     # config = CONFIGS["LHNN_3DRosenbrock"]

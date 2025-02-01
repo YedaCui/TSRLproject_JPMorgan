@@ -1,0 +1,46 @@
+This is BibTeX, Version 0.99d (TeX Live 2021)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: /Users/yedacui/Google Drive/QuantJob/TSRLproject_JPMorgan/report/.texpadtmp/report_part1.aux
+The style file: chicagoa.bst
+Database file #1: ../refs.bib
+You've used 1 entry,
+            2905 wiz_defined-function locations,
+            626 strings with 5329 characters,
+and the built_in function-call counts, 750 in all, are:
+= -- 58
+> -- 61
+< -- 0
++ -- 18
+- -- 18
+* -- 74
+:= -- 139
+add.period$ -- 3
+call.type$ -- 1
+change.case$ -- 8
+chr.to.int$ -- 1
+cite$ -- 1
+duplicate$ -- 17
+empty$ -- 44
+format.name$ -- 22
+if$ -- 140
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 1
+newline$ -- 9
+num.names$ -- 10
+pop$ -- 5
+preamble$ -- 1
+purify$ -- 14
+quote$ -- 0
+skip$ -- 18
+stack$ -- 0
+substring$ -- 38
+swap$ -- 5
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 20
+warning$ -- 0
+while$ -- 7
+width$ -- 0
+write$ -- 16

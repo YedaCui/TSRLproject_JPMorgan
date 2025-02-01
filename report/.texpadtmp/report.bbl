@@ -1,0 +1,11 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Dhulipala, Che, and Shields}{Dhulipala
+  et~al.}{2023}]{dhulipala2023efficient}
+Dhulipala, S.~L., Y.~Che, and M.~D. Shields (2023).
+\newblock Efficient bayesian inference with latent hamiltonian neural networks
+  in no-u-turn sampling.
+\newblock {\em Journal of Computational Physics\/}~{\em 492}, 112425.
+
+
+\end{thebibliography}

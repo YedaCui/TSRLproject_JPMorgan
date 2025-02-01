@@ -50,10 +50,8 @@ def sampling(config_name, sampler_type, initial_state, num_samples, burnin, chai
     else:
         with open(sample_path, "rb") as f:
             data_samples = pickle.load(f)
-        sampler.samples = data_samples["samples"]
-        sampler.numgrad = data_samples["numgrad"]
-        sampler.monitor = data_samples["monitor"]
-        sampler.accept = data_samples["accept"]
+        for key, value in data_samples.items():
+            setattr(sampler, key, value)
     return sampler
 
 if __name__ == "__main__":

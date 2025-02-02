@@ -2,7 +2,7 @@
 
 This is a project for the **AI & Data Science Associate Internship Program** of the Machine Learning Center of Excellence.
 
-This repository implements the **Latent Hamiltonian Neural Network (LHNN)** introduced in *Dhulipala et al., 2023*. The project is built using **Python 3** and **TensorFlow 2.18.0**. 
+This repository implements the **Latent Hamiltonian Neural Network (LHNN)** introduced in *Dhulipala et al., 2023* and the **Pseudo Marginal Hamiltonaian Monte Carlo (PMHMC)** describled in *Alenlov et al, 2021*. Additionally, this repository explores the application of  **LHNN** to enhance **PMHMC**. The project is built using **Python 3** and **TensorFlow 2.18.0**. 
 
 All resource files and code are organized in the `src/` folder.
 

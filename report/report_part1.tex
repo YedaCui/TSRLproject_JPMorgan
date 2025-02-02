@@ -36,14 +36,16 @@
 \usepackage{todonotes}
 
 \title{Hamiltonian Neural Network for Hamiltonian Monte Carlo}
+\author{Yeda CUI}
+\date{December 8, 2024}
 
 \begin{document}
 
 \maketitle
 
-This paper explains the parts of \cite{dhulipala2023efficient} that are difficult to understand and presents the replication results obtained using TensorFlow.
+This report explains the parts of \cite{dhulipala2023efficient} that are difficult to understand and presents the replication results obtained using TensorFlow.
 
-\subsection{Typos and Explaination}
+\section{Typos and Explaination}
 \begin{itemize}
 	\item On page 9, the sentence \textit{"where $\{q^+, p^+\}$ and $\{q^-, p^-\}$ are, respectively, the leftmost and rightmost states of a sub-tree in the binary tree."} What do the leftmost and rightmost states mean in high dimensions? In high dimensions, the right direction corresponds to positive step size $dt$, while the left direction corresponds to negative step size $dt$.
     \item On page 9, what error does the equation (20) measure? The error monitors the integration error. According to the simulation method of $u$ in Algorithm 4, we know that $\log u + H(q(0), p(0)) < 0$. If the integration error is small, it should hold that $\log u + H(q, p) < \Delta_{\text{max}}$. Otherwise, if this inequality is violated, the integration error is very large, and the tree should stop.
@@ -69,7 +71,7 @@ where $X \in \mathbb{R}^{50 \times 2}$ is the matrix of stacked sensor values. S
 \end{align}
 \end{itemize}
 
-\subsection{Replication Results}
+\section{Replication Results}
 I used TensorFlow to replicate the results presented in \cite{dhulipala2023efficient}. All the figures and tables referenced in this subsection are available in the file "plot\_Dhulipapa.ipynb".
 
 \smallskip 
@@ -130,7 +132,7 @@ plots correspond to the three dimensions q1, q2, and q3.}
 \begin{equation}
     H_\theta = \mathbf{1}^T \mathbf{\lambda} = \mathbf{1}^T (\mathbf{\omega}_P \mathbf{u}_P + \mathbf{b}_P) = \mathbf{1}^T \mathbf{\omega}_P \mathbf{u}_P + \mathbf{1}^T \mathbf{b}_P,
 \end{equation}
-which is mathematically equivalent to an HNN with $\mathbf{1}^T \mathbf{\omega}_P$ and $\mathbf{1}^T \mathbf{b}_P$ as the weights and biases of the last layer. Therefore, I believe that Figure 6 in \cite{dhulipala2023efficient} presents an unfair comparison. Figure \ref{fig:fig7} and Table \ref{tab:tab2} are similar to that in \cite{dhulipala2023efficient}.
+which is mathematically equivalent to an HNN in \cite{greydanus2019hamiltonian} with $\mathbf{1}^T \mathbf{\omega}_P$ and $\mathbf{1}^T \mathbf{b}_P$ as the weights and biases of the last layer. Therefore, I believe that Figure 6 in \cite{dhulipala2023efficient} presents an unfair comparison. Figure \ref{fig:fig7} and Table \ref{tab:tab2} are similar to that in \cite{dhulipala2023efficient}.
 
 \begin{figure}
 \centering
@@ -235,8 +237,14 @@ q_1=\mathcal{N}(0,9) \\
 q_2=\mathcal{N}\left(0, \exp ^{q_1}\right)
 \end{array}\right. .
 \end{align*}
-In the implementation, the correct density is used. L-HNNs are trained on a sampling of the 2-D Neal’s funnel density, the 5-D ill-conditioned Gaussian density, and the 10-D degenerate Rosenbrock density. Table \ref{tab:tab3} and Figures \ref{fig:fig9} and \ref{fig:fig10} show results similar to those reported in \cite{dhulipala2023efficient}. 
+In the implementation, the correct density is used. L-HNNs are trained on a sampling of the 2-D Neal’s funnel density, the 5-D ill-conditioned Gaussian density, and the 10-D degenerate Rosenbrock density. Table \ref{tab:tab3} and Figure \ref{fig:fig9} show results similar to those reported in \cite{dhulipala2023efficient}. However, Figures \ref{fig:fig8} and \ref{fig:fig10} indicate that my trained L-HNNs did not explore sufficiently under those two cases, particularly for large values. %Further refinement of the trained L-HNNs may be necessary.
 
+\begin{figure}
+\centering
+\includegraphics[width=0.9\textwidth]{../figures/fig8.png}
+\caption{Scatter plot comparison of samples generated from a 2-D Neal’s funnel density, using NUTS and L-HNNs in NUTS with online error monitoring. Comparison of the eCDF plots for the dimensions q1 and q2.}
+\label{fig:fig8}
+\end{figure}
 
 \begin{figure}
 \centering
@@ -267,13 +275,13 @@ error monitoring)}
 \hline
 LHNN-NUTS & 
 \begin{tabular}{c} 
-() 
+(1480.76, 1016.29) 
 \end{tabular} & 
 \begin{tabular}{c} 
- \\ 
+1,546,088 \\ 
 Training: 400,000 \\ 
-Evaluation: 
-\end{tabular} & 
+Evaluation: 1,146,088
+\end{tabular} & 0.0008
  \\
 \hline
 NUTS & 
@@ -329,7 +337,7 @@ NUTS &
 \end{table}
 
 \smallskip
-\noindent \textbf{Computational case studies} Table \ref{tab:tab4} and Figure \ref{fig:fig11} demonstrate that our results are consistent with those reported in \cite{dhulipala2023efficient}.
+\noindent \textbf{Computational case studies} Table \ref{tab:tab4} and Figure \ref{fig:fig11} demonstrate that our results are consistent with those reported in \cite{dhulipala2023efficient} under the Allen-Cahn stochastic PDE case. In the case of elliptic PDE inference, results from HMC are not available. However, given the target density proposed in the first subsection, the posterior distribution of the values of $k$ at the sensor locations is expected to follow a multivariate normal distribution.
 
 \begin{table}[h!]
 \centering
@@ -355,18 +363,18 @@ Evaluation: 17,272
 \hline
 NUTS & 232.42 & 581,752 & 0.00040 \\
 \hline
-\multicolumn{4}{|c|}{\textbf{Elliptic PDE (50 inference parameters)}} \\
-\hline
-LHNN-NUTS &  & 
-\begin{tabular}{c}
- \\ 
-Training: 64,000 \\ 
-Evaluation:  
-\end{tabular} & 
- \\
-\hline
-NUTS &  &  &  \\
-\hline
+%\multicolumn{4}{|c|}{\textbf{Elliptic PDE (50 inference parameters)}} \\
+%\hline
+%LHNN-NUTS &  & 
+%\begin{tabular}{c}
+% \\ 
+%Training: 64,000 \\ 
+%Evaluation:  
+%\end{tabular} & 
+% \\
+%\hline
+%NUTS &  &  &  \\
+%\hline
 \end{tabular}
 \label{tab:performance_summary}
 \end{table}
@@ -378,7 +386,9 @@ NUTS &  &  &  \\
 \label{fig:fig11}
 \end{figure}
 
-
+\begin{remark}[Testing]
+	All the source code is located in the ./src/ folder, with each Python script having a corresponding test file in the ./tests/ folder to validate all the classes and functions.
+\end{remark}
 
 \bibliographystyle{chicagoa}
 \bibliography{refs}

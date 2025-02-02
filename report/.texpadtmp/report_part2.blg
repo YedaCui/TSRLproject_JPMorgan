@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2021)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: /Users/yedacui/Google Drive/QuantJob/TSRLproject_JPMorgan/report/.texpadtmp/report_part2.aux
+The style file: chicagoa.bst
+Database file #1: ../refs.bib
+Warning--page numbers missing in greydanus2019hamiltonian
+You've used 4 entries,
+            2905 wiz_defined-function locations,
+            649 strings with 5954 characters,
+and the built_in function-call counts, 3196 in all, are:
+= -- 244
+> -- 295
+< -- 0
++ -- 90
+- -- 90
+* -- 337
+:= -- 585
+add.period$ -- 12
+call.type$ -- 4
+change.case$ -- 35
+chr.to.int$ -- 4
+cite$ -- 5
+duplicate$ -- 69
+empty$ -- 168
+format.name$ -- 106
+if$ -- 593
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 4
+newline$ -- 27
+num.names$ -- 40
+pop$ -- 23
+preamble$ -- 1
+purify$ -- 59
+quote$ -- 0
+skip$ -- 69
+stack$ -- 0
+substring$ -- 145
+swap$ -- 22
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 80
+warning$ -- 1
+while$ -- 29
+width$ -- 0
+write$ -- 58
+(There was 1 warning)

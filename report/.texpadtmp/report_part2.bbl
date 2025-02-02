@@ -1,0 +1,34 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Alenl{\"o}v, Doucet, and Lindsten}{Alenl{\"o}v
+  et~al.}{2021}]{alenlov2021pseudo}
+Alenl{\"o}v, J., A.~Doucet, and F.~Lindsten (2021).
+\newblock Pseudo-marginal hamiltonian monte carlo.
+\newblock {\em Journal of Machine Learning Research\/}~{\em 22\/}(141), 1--45.
+
+
+\bibitem[\protect\citeauthoryear{Cape, Dearden, Gamber, Liebner, Lu, and
+  Nguyen}{Cape et~al.}{2015}]{cape2015estimating}
+Cape, J., W.~Dearden, W.~Gamber, J.~Liebner, Q.~Lu, and M.~L. Nguyen (2015).
+\newblock Estimating heston's and bates’ models parameters using markov chain
+  monte carlo simulation.
+\newblock {\em Journal of Statistical Computation and Simulation\/}~{\em
+  85\/}(11), 2295--2314.
+
+
+\bibitem[\protect\citeauthoryear{Dhulipala, Che, and Shields}{Dhulipala
+  et~al.}{2023}]{dhulipala2023efficient}
+Dhulipala, S.~L., Y.~Che, and M.~D. Shields (2023).
+\newblock Efficient bayesian inference with latent hamiltonian neural networks
+  in no-u-turn sampling.
+\newblock {\em Journal of Computational Physics\/}~{\em 492}, 112425.
+
+
+\bibitem[\protect\citeauthoryear{Greydanus, Dzamba, and Yosinski}{Greydanus
+  et~al.}{2019}]{greydanus2019hamiltonian}
+Greydanus, S., M.~Dzamba, and J.~Yosinski (2019).
+\newblock Hamiltonian neural networks.
+\newblock {\em Advances in neural information processing systems\/}~{\em 32}.
+
+
+\end{thebibliography}

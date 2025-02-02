@@ -3,8 +3,8 @@ entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**report_part1.tex
-(./report_part1.tex
+**report_part2.tex
+(./report_part2.tex
 LaTeX2e <2020-10-01> patch level 4
 L3 programming layer <2021-02-18> (/usr/local/texlive/2021/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
@@ -618,8 +618,8 @@ File: pgflibraryfadings.code.tex 2020/12/27 v3.1.8b (3.1.8b)
 File: l3backend-pdftex.def 2021-03-18 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count335
 \l__pdf_internal_box=\box72
-) (/Users/yedacui/Google Drive/QuantJob/TSRLproject_JPMorgan/report/.texpadtmp/report_part1.aux)
-\openout1 = `report_part1.aux'.
+) (/Users/yedacui/Google Drive/QuantJob/TSRLproject_JPMorgan/report/.texpadtmp/report_part2.aux)
+\openout1 = `report_part2.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 42.
 LaTeX Font Info:    ... okay on input line 42.
@@ -722,106 +722,44 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 LaTeX Font Info:    Trying to load font information for U+msb on input line 45.
  (/usr/local/texlive/2021/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [1
-
-{/usr/local/texlive/2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-<../figures/fig2a.png, id=59, 408.3255pt x 312.2064pt>
-File: ../figures/fig2a.png Graphic file (type png)
-<use ../figures/fig2a.png>
-Package pdftex.def Info: ../figures/fig2a.png  used on input line 82.
-(pdftex.def)             Requested size: 135.89174pt x 103.90498pt.
-<../figures/fig2b.png, id=61, 412.6617pt x 314.3745pt>
-File: ../figures/fig2b.png Graphic file (type png)
-<use ../figures/fig2b.png>
-Package pdftex.def Info: ../figures/fig2b.png  used on input line 83.
-(pdftex.def)             Requested size: 135.89174pt x 103.52324pt.
-<../figures/fig2c.png, id=62, 412.6617pt x 312.2064pt>
-File: ../figures/fig2c.png Graphic file (type png)
-<use ../figures/fig2c.png>
-Package pdftex.def Info: ../figures/fig2c.png  used on input line 84.
-(pdftex.def)             Requested size: 135.89174pt x 102.80928pt.
-LaTeX Font Info:    Trying to load font information for OMS+cmr on input line 85.
- (/usr/local/texlive/2021/texmf-dist/tex/latex/base/omscmr.fd
-File: omscmr.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
-LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 85.
-<../figures/fig3a.png, id=63, 408.3255pt x 312.2064pt>
-File: ../figures/fig3a.png Graphic file (type png)
-<use ../figures/fig3a.png>
-Package pdftex.def Info: ../figures/fig3a.png  used on input line 91.
-(pdftex.def)             Requested size: 135.89174pt x 103.90498pt.
-<../figures/fig3b.png, id=64, 409.7709pt x 312.2064pt>
-File: ../figures/fig3b.png Graphic file (type png)
-<use ../figures/fig3b.png>
-Package pdftex.def Info: ../figures/fig3b.png  used on input line 93.
+<../figures/pmhmcplots.png, id=43, 859.2903pt x 425.6703pt>
+File: ../figures/pmhmcplots.png Graphic file (type png)
+<use ../figures/pmhmcplots.png>
+Package pdftex.def Info: ../figures/pmhmcplots.png  used on input line 82.
+(pdftex.def)             Requested size: 271.7835pt x 134.63245pt.
+ [1
+
+{/usr/local/texlive/2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2 <../figures/pmhmcplots.png>]
+<../figures/lhnngrads.png, id=100, 421.3341pt x 315.0972pt>
+File: ../figures/lhnngrads.png Graphic file (type png)
+<use ../figures/lhnngrads.png>
+Package pdftex.def Info: ../figures/lhnngrads.png  used on input line 122.
+(pdftex.def)             Requested size: 135.89174pt x 101.62648pt.
+<../figures/hamildiff.png, id=101, 414.8298pt x 312.2064pt>
+File: ../figures/hamildiff.png Graphic file (type png)
+<use ../figures/hamildiff.png>
+Package pdftex.def Info: ../figures/hamildiff.png  used on input line 124.
+(pdftex.def)             Requested size: 135.89174pt x 102.27097pt.
+<../figures/losscmp.png, id=107, 409.7709pt x 312.2064pt>
+File: ../figures/losscmp.png Graphic file (type png)
+<use ../figures/losscmp.png>
+Package pdftex.def Info: ../figures/losscmp.png  used on input line 138.
 (pdftex.def)             Requested size: 135.89174pt x 103.5334pt.
- [2 <../figures/fig2a.png> <../figures/fig2b.png> <../figures/fig2c.png> <../figures/fig3a.png> <../figures/fig3b.png>]
-<../figures/fig4.png, id=89, 1074.6549pt x 354.123pt>
-File: ../figures/fig4.png Graphic file (type png)
-<use ../figures/fig4.png>
-Package pdftex.def Info: ../figures/fig4.png  used on input line 123.
-(pdftex.def)             Requested size: 407.66833pt x 134.33577pt.
-<../figures/fig5.png, id=106, 1076.1003pt x 534.798pt>
-File: ../figures/fig5.png Graphic file (type png)
-<use ../figures/fig5.png>
-Package pdftex.def Info: ../figures/fig5.png  used on input line 139.
-(pdftex.def)             Requested size: 317.07614pt x 157.57635pt.
-<../figures/fig6.png, id=107, 1076.1003pt x 534.798pt>
-File: ../figures/fig6.png Graphic file (type png)
-<use ../figures/fig6.png>
-Package pdftex.def Info: ../figures/fig6.png  used on input line 146.
-(pdftex.def)             Requested size: 317.07614pt x 157.57635pt.
-<../figures/fig7.png, id=108, 1076.823pt x 354.123pt>
-File: ../figures/fig7.png Graphic file (type png)
-<use ../figures/fig7.png>
-Package pdftex.def Info: ../figures/fig7.png  used on input line 154.
-(pdftex.def)             Requested size: 407.66833pt x 134.0656pt.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<../figures/fig8.png, id=115, 1076.1003pt x 354.123pt>
-File: ../figures/fig8.png Graphic file (type png)
-<use ../figures/fig8.png>
-Package pdftex.def Info: ../figures/fig8.png  used on input line 244.
-(pdftex.def)             Requested size: 407.66833pt x 134.15205pt.
-<../figures/fig9.png, id=116, 1016.8389pt x 860.013pt>
-File: ../figures/fig9.png Graphic file (type png)
-<use ../figures/fig9.png>
-Package pdftex.def Info: ../figures/fig9.png  used on input line 251.
-(pdftex.def)             Requested size: 407.66833pt x 344.79959pt.
-<../figures/fig10.png, id=117, 1013.9481pt x 859.2903pt>
-File: ../figures/fig10.png Graphic file (type png)
-<use ../figures/fig10.png>
-Package pdftex.def Info: ../figures/fig10.png  used on input line 259.
-(pdftex.def)             Requested size: 407.66833pt x 345.4801pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-[3 <../figures/fig4.png>] [4 <../figures/fig5.png> <../figures/fig6.png> <../figures/fig7.png>] [5 <../figures/fig8.png> <../figures/fig9.png>] [6 <../figures/fig10.png>]
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<../figures/fig11.png, id=158, 1020.4524pt x 860.013pt>
-File: ../figures/fig11.png Graphic file (type png)
-<use ../figures/fig11.png>
-Package pdftex.def Info: ../figures/fig11.png  used on input line 384.
-(pdftex.def)             Requested size: 407.66833pt x 343.56606pt.
-(/Users/yedacui/Google Drive/QuantJob/TSRLproject_JPMorgan/report/.texpadtmp/report_part1.bbl [7] [8 <../figures/fig11.png>]) [9] (/Users/yedacui/Google Drive/QuantJob/TSRLproject_JPMorgan/report/.texpadtmp/report_part1.aux) ) 
+ [3 <../figures/lhnngrads.png> <../figures/hamildiff.png>] [4 <../figures/losscmp.png>] (/Users/yedacui/Google Drive/QuantJob/TSRLproject_JPMorgan/report/.texpadtmp/report_part2.bbl) [5] (/Users/yedacui/Google Drive/QuantJob/TSRLproject_JPMorgan/report/.texpadtmp/report_part2.aux) ) 
 Here is how much of TeX's memory you used:
- 24141 strings out of 478994
- 435279 string characters out of 5858185
- 745666 words of memory out of 5000000
- 41146 multiletter control sequences out of 15000+600000
- 413984 words of font info for 65 fonts, out of 8000000 for 9000
+ 24052 strings out of 478994
+ 433806 string characters out of 5858185
+ 732011 words of memory out of 5000000
+ 41076 multiletter control sequences out of 15000+600000
+ 413950 words of font info for 65 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 102i,16n,102p,686b,614s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}</usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb>
-Output written on "/Users/yedacui/Google Drive/QuantJob/TSRLproject_JPMorgan/report/.texpadtmp/report_part1.pdf" (9 pages, 2385654 bytes).
+ 102i,16n,102p,1250b,616s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib8.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb>
+Output written on "/Users/yedacui/Google Drive/QuantJob/TSRLproject_JPMorgan/report/.texpadtmp/report_part2.pdf" (5 pages, 356167 bytes).
 PDF statistics:
- 237 PDF objects out of 1000 (max. 8388607)
- 166 compressed objects within 2 object streams
- 30 named destinations out of 1000 (max. 500000)
- 174 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 208 PDF objects out of 1000 (max. 8388607)
+ 156 compressed objects within 2 object streams
+ 24 named destinations out of 1000 (max. 500000)
+ 129 words of extra memory for PDF output out of 10000 (max. 10000000)
 

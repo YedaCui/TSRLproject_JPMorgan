@@ -8,4 +8,11 @@ Dhulipala, S.~L., Y.~Che, and M.~D. Shields (2023).
 \newblock {\em Journal of Computational Physics\/}~{\em 492}, 112425.
 
 
+\bibitem[\protect\citeauthoryear{Greydanus, Dzamba, and Yosinski}{Greydanus
+  et~al.}{2019}]{greydanus2019hamiltonian}
+Greydanus, S., M.~Dzamba, and J.~Yosinski (2019).
+\newblock Hamiltonian neural networks.
+\newblock {\em Advances in neural information processing systems\/}~{\em 32}.
+
+
 \end{thebibliography}

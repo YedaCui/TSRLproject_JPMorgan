@@ -3,44 +3,46 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: /Users/yedacui/Google Drive/QuantJob/TSRLproject_JPMorgan/report/.texpadtmp/report_part1.aux
 The style file: chicagoa.bst
 Database file #1: ../refs.bib
-You've used 1 entry,
+Warning--page numbers missing in greydanus2019hamiltonian
+You've used 2 entries,
             2905 wiz_defined-function locations,
-            626 strings with 5329 characters,
-and the built_in function-call counts, 750 in all, are:
-= -- 58
-> -- 61
+            632 strings with 5490 characters,
+and the built_in function-call counts, 1424 in all, are:
+= -- 110
+> -- 122
 < -- 0
-+ -- 18
-- -- 18
-* -- 74
-:= -- 139
-add.period$ -- 3
-call.type$ -- 1
-change.case$ -- 8
-chr.to.int$ -- 1
-cite$ -- 1
-duplicate$ -- 17
-empty$ -- 44
-format.name$ -- 22
-if$ -- 140
++ -- 36
+- -- 36
+* -- 142
+:= -- 264
+add.period$ -- 6
+call.type$ -- 2
+change.case$ -- 16
+chr.to.int$ -- 2
+cite$ -- 3
+duplicate$ -- 33
+empty$ -- 79
+format.name$ -- 44
+if$ -- 265
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 1
-newline$ -- 9
-num.names$ -- 10
-pop$ -- 5
+missing$ -- 2
+newline$ -- 15
+num.names$ -- 20
+pop$ -- 10
 preamble$ -- 1
-purify$ -- 14
+purify$ -- 28
 quote$ -- 0
-skip$ -- 18
+skip$ -- 35
 stack$ -- 0
-substring$ -- 38
-swap$ -- 5
+substring$ -- 58
+swap$ -- 10
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 20
-warning$ -- 0
-while$ -- 7
+type$ -- 40
+warning$ -- 1
+while$ -- 13
 width$ -- 0
-write$ -- 16
+write$ -- 30
+(There was 1 warning)

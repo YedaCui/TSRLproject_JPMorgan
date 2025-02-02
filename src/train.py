@@ -117,11 +117,7 @@ def train_pm(config):
     else:
         raise ValueError(f"Invalid 'type_NN' value: {config.get('type_NN', None)}")
 
-    # loss_obj = tf.keras.losses.MeanSquaredError()
-    def loss_obj(y, y_pred):
-        loss = (y-y_pred)**2
-        loss = loss / (tf.math.reduce_std(loss, axis=0) + 1e-8)
-        return tf.reduce_mean(loss)
+    loss_obj = tf.keras.losses.MeanSquaredError()
     optimizer = tf.keras.optimizers.Adam()
 
     @tf.function
@@ -179,11 +175,14 @@ if __name__ == "__main__":
     # config = CONFIGS["LHNN_2DNealsfunnel"]
     config = CONFIGS["PMHNN_pmglmm"]
     
-    # config = CONFIGS["LHNN_ellipticpde"]
-    # gene_data.get_dataset(**config)
+    # if "pseudo-marginal" in config.keys():
+    #     gene_data.get_dataset_pm(**config)
+    # else:
+    #     gene_data.get_dataset(**config)
     # print("Finished generating the dataset.")
-    if "pseudo-marginal" in config.keys():
-        model = train_pm(config)
-    else:
-        model = train(config)
-    model.save_weights(config["path_model"])
+    
+    # if "pseudo-marginal" in config.keys():
+    #     model = train_pm(config)
+    # else:
+    #     model = train(config)
+    # model.save_weights(config["path_model"])

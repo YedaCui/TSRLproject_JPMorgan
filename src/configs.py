@@ -233,7 +233,7 @@ CONFIGS = {
     "PMHNN_pmglmm" : {
         "seed" : 0,
         "load" : True,
-        "pseudo-marginal" : None,
+        "pseudo-marginal" : True,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/pmglmmB",
         "num_samples" : 500,
         "per_train" : 0.9,
@@ -259,7 +259,7 @@ CONFIGS = {
     "LHNN_pmglmm" : {
         "seed" : 0,
         "load" : True,
-        "pseudo-marginal" : None,
+        "pseudo-marginal" : True,
         "path" : "/home/ycui/Documents/TSRLproject_JPMorgan/data/pmglmmB",
         "num_samples" : 500,
         "per_train" : 0.9,
@@ -274,7 +274,7 @@ CONFIGS = {
         "num_layers": 3,
         "output_dim": (13+500*128)*2,
         "acti" : "tanh",
-        "baseline" : True,
+        "baseline" : False,
         "field_type" : "solenoidal",
         "separate_fields" : False,
         "train_epoch" : 100,

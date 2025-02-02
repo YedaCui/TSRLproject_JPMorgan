@@ -109,7 +109,7 @@ class HNN(tf.keras.Model):
     
 class PMHNN(tf.keras.Model):
     """
-    Pseudo-Marginal Hamiltonian Neural Network (PMHNN) introduced in the report of this repo.
+    Pseudo-Marginal Hamiltonian Neural Network (PMHNN) introduced in the second report of this repositary.
     
     This model uses a neural network to approximate function to learn the function from 
     observation, coefficients, marginal variables and latent variable to the unbaised approximation of negative log density function

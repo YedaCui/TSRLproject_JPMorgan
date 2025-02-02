@@ -115,6 +115,9 @@ def functions(dist_name):
             part4 = logitw1 + 2*tf.math.log(1+tf.math.exp(-logitw1))
             H_B = part1 + part2 + part3 + part4
             return H_A + H_B
+    elif dist_name == "standradnormal":
+        def H_function(state):
+            return tf.reduce_sum(state**2/2)
     else:
         raise ValueError("probability distribution name not recognized")
 

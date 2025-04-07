@@ -129,7 +129,7 @@ class SimpleLeapfrogIntegrator(LeapfrogIntegrator):
   """
   # pylint: enable=line-too-long
 
-  def __init__(self, target_fn, step_sizes, num_steps):
+  def __init__(self, target_fn, step_sizes, num_steps, model=None):
     """Constructs the LeapfrogIntegrator.
 
     Assumes a simple quadratic kinetic energy function: `0.5 ||momentum||**2`.
@@ -206,6 +206,7 @@ class SimpleLeapfrogIntegrator(LeapfrogIntegrator):
     self._target_fn = target_fn
     self._step_sizes = step_sizes
     self._num_steps = num_steps
+    self._model = model
 
   @property
   def target_fn(self):
@@ -291,7 +292,7 @@ class SimpleLeapfrogIntegrator(LeapfrogIntegrator):
       ] = tf.while_loop(
           cond=lambda i, *_: i < self.num_steps,
           body=lambda i, *args: [i + 1] + list(_one_step(  # pylint: disable=no-value-for-parameter,g-long-lambda
-              self.target_fn, self.step_sizes, get_velocity_parts, *args)),
+              self.target_fn, self.step_sizes, get_velocity_parts, *args, model=self._model)),
           loop_vars=[
               tf.zeros_like(self.num_steps, name='iter'),
               half_next_momentum_parts,
@@ -323,7 +324,8 @@ def _one_step(
     half_next_momentum_parts,
     state_parts,
     target,
-    target_grad_parts):
+    target_grad_parts,
+    model=None):
   """Body of integrator while loop."""
   with tf.name_scope('leapfrog_integrate_one_step'):
 
@@ -333,8 +335,11 @@ def _one_step(
         state_parts, step_sizes, velocity_parts):
       next_state_parts.append(
           state_part + _multiply(eps, velocity_part, dtype=state_part.dtype))
-    [next_target, next_target_grad_parts] = mcmc_util.maybe_call_fn_and_grads(
-        target_fn, next_state_parts)
+    if model is None:
+      [next_target, next_target_grad_parts] = mcmc_util.maybe_call_fn_and_grads(
+          target_fn, next_state_parts)
+    else:
+      # TODO add the update process when the model is given.
     if any(g is None for g in next_target_grad_parts):
       raise ValueError(
           'Encountered `None` gradient.\n'

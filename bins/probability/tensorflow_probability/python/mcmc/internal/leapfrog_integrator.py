@@ -339,7 +339,9 @@ def _one_step(
       [next_target, next_target_grad_parts] = mcmc_util.maybe_call_fn_and_grads(
           target_fn, next_state_parts)
     else:
-      # TODO add the update process when the model is given.
+      # add the update process when the model is given.
+      [next_target, next_target_grad_parts] = mcmc_util.maybe_call_grads_by_model(
+          target_fn, next_state_parts, half_next_momentum_parts, model)
     if any(g is None for g in next_target_grad_parts):
       raise ValueError(
           'Encountered `None` gradient.\n'

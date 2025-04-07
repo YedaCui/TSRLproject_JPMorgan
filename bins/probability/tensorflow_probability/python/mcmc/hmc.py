@@ -406,7 +406,8 @@ class HamiltonianMonteCarlo(kernel_base.TransitionKernel):
                state_gradients_are_stopped=False,
                store_parameters_in_results=False,
                experimental_shard_axis_names=None,
-               name=None):
+               name=None,
+               model=None):
     """Initializes this transition kernel.
 
     Args:
@@ -444,6 +445,7 @@ class HamiltonianMonteCarlo(kernel_base.TransitionKernel):
             state_gradients_are_stopped=state_gradients_are_stopped,
             name=name or 'hmc_kernel',
             store_parameters_in_results=store_parameters_in_results,
+            model=model,
         )).experimental_with_shard_axes(experimental_shard_axis_names)
     self._parameters = self._impl.inner_kernel.parameters.copy()
 
@@ -558,7 +560,8 @@ class UncalibratedHamiltonianMonteCarlo(kernel_base.TransitionKernel):
                state_gradients_are_stopped=False,
                store_parameters_in_results=False,
                experimental_shard_axis_names=None,
-               name=None):
+               name=None,
+               model=None):
     """Initializes this transition kernel.
 
     Args:
@@ -601,6 +604,7 @@ class UncalibratedHamiltonianMonteCarlo(kernel_base.TransitionKernel):
         store_parameters_in_results=store_parameters_in_results,
     )
     self._momentum_dtype = None
+    self._model = model
 
   @property
   def target_log_prob_fn(self):
@@ -695,7 +699,7 @@ class UncalibratedHamiltonianMonteCarlo(kernel_base.TransitionKernel):
                 seed=part_seed))
 
       integrator = leapfrog_impl.SimpleLeapfrogIntegrator(
-          self.target_log_prob_fn, step_sizes, num_leapfrog_steps)
+          self.target_log_prob_fn, step_sizes, num_leapfrog_steps, model=self._model)
 
       [
           next_momentum_parts,

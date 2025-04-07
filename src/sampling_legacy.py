@@ -1,13 +1,10 @@
 # Code by Yeda CUI at department of SEEM of The Chinese Unviersity of Hong Kong
 
-from . import hnn, mcmc, utils, functions, logdensity
+from . import hnn, mcmc, utils, functions
 from .configs import CONFIGS
 import numpy as np
 import tensorflow as tf
 import pickle
-import sys
-# sys.path.insert(0, "/home/ycui/Documents/TSRLproject_JPMorgan/bins")
-import bins.probability.tensorflow_probability.python.mcmc as tfpmcmc
 
 def sampling(config_name, sampler_type, initial_state, num_samples, burnin, chains=1, epsilon=0.05, model_path=None, seed=0, sample_path=None, **kwargs):
     """
@@ -39,53 +36,33 @@ def sampling(config_name, sampler_type, initial_state, num_samples, burnin, chai
         model.load_weights(model_path)
     else:
         model = None
-    unnormalized_log_prob = logdensity.get_log_density_fn(config["dist_name"])
 
     if sampler_type == "HMC":
-        adaptive_sampler = tfpmcmc.SimpleStepSizeAdaptation(
-            tfpmcmc.HamiltonianMonteCarlo(
-                target_log_prob_fn=unnormalized_log_prob,
-                num_leapfrog_steps=3,
-                step_size=epsilon,
-                ),
-            num_adaptation_steps=int(burnin * 0.8))
-        # sampler = tfpmcmc.HamiltonianMonteCarlo(initial_state=initial_state, num_samples=num_samples, burnin=burnin, chains=chains, epsilon=epsilon, hamiltonain_model=model, H_function=functions.functions(config["dist_name"]),seed=seed, **kwargs)
-    # elif sampler_type == "NUTS":
-    #     sampler = mcmc.NUTS(initial_state=initial_state, num_samples=num_samples, burnin=burnin, chains=chains, epsilon=epsilon, hamiltonain_model=model, H_function=functions.functions(config["dist_name"]),seed=seed, **kwargs)
-    # elif sampler_type == "PMHMC":
-    #     sampler = mcmc.PMHMC(initial_state=initial_state, num_samples=num_samples, burnin=burnin, chains=chains, epsilon=epsilon, hamiltonain_model=model, H_function=functions.functions(config["dist_name"]),H_B=functions.functions(config["dist_name_B"]), seed=seed, **kwargs)
+        sampler = mcmc.HMC(initial_state=initial_state, num_samples=num_samples, burnin=burnin, chains=chains, epsilon=epsilon, hamiltonain_model=model, H_function=functions.functions(config["dist_name"]),seed=seed, **kwargs)
+    elif sampler_type == "NUTS":
+        sampler = mcmc.NUTS(initial_state=initial_state, num_samples=num_samples, burnin=burnin, chains=chains, epsilon=epsilon, hamiltonain_model=model, H_function=functions.functions(config["dist_name"]),seed=seed, **kwargs)
+    elif sampler_type == "PMHMC":
+        sampler = mcmc.PMHMC(initial_state=initial_state, num_samples=num_samples, burnin=burnin, chains=chains, epsilon=epsilon, hamiltonain_model=model, H_function=functions.functions(config["dist_name"]),H_B=functions.functions(config["dist_name_B"]), seed=seed, **kwargs)
     else:
         raise ValueError("The sampler type is not supported.")
-    
-    @tf.function
-    def run_chain():
-        # Run the chain (with burn-in).
-        samples, is_accepted = tfpmcmc.sample_chain(
-            num_results=num_samples,
-            num_burnin_steps=burnin,
-            current_state=1.,
-            kernel=adaptive_sampler,
-            trace_fn=lambda _, pkr: pkr.inner_results.is_accepted)
-
-        return samples, is_accepted
     if sample_path is None:
-        samples, is_accepted = run_chain()
+        sampler.sample()
     else:
         with open(sample_path, "rb") as f:
-            samples = pickle.load(f)
-        # for key, value in data_samples.items():
-        #     setattr(sampler, key, value)
-    return samples
+            data_samples = pickle.load(f)
+        for key, value in data_samples.items():
+            setattr(sampler, key, value)
+    return sampler
 
 if __name__ == "__main__":
     gpus = tf.config.experimental.list_physical_devices('GPU')
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
-    tf.config.set_visible_devices(gpus[2], "GPU")
+    tf.config.set_visible_devices(gpus[0], "GPU")
 
-    samples = sampling(config_name="LHNN_1DGaussianmixture", sampler_type="HMC", initial_state=np.array([0]), num_samples=5000, burnin=1000, chains=1, epsilon=0.05, 
-             model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_1DGaussianmixture_sin.weights.h5", L=5)
-    sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/lhnn_hmc_LHNN_1DGaussianmixture.pkl"
+    # sampler = sampling(config_name="LHNN_1DGaussianmixture", sampler_type="HMC", initial_state=np.array([0]), num_samples=5000, burnin=1000, chains=1, epsilon=0.05, 
+    #          model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_1DGaussianmixture_sin.weights.h5", L=5)
+    # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/lhnn_hmc_LHNN_1DGaussianmixture.pkl"
 
     # sampler = sampling(config_name="LHNN_1DGaussianmixture", sampler_type="HMC", initial_state=np.array([0]), num_samples=5000, burnin=1000, chains=1, epsilon=0.05, 
     #          model_path=None, L=5)
@@ -151,9 +128,9 @@ if __name__ == "__main__":
     #          model_path=None, threshold_nn=10, num_lf=20, threshold_lf=1000) # traditional nuts.
     # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/grad_nuts_ac.pkl"
 
-    # sampler = sampling(config_name="LHNN_ellipticpde", sampler_type="NUTS", initial_state=np.array([0]*50), num_samples=5000, burnin=1000, chains=1, epsilon=0.025, 
-    #          model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_ellipticpde_sin.weights.h5", threshold_nn=10, num_lf=20, threshold_lf=1000) 
-    # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/lhnn_nuts_ellipticpde.pkl"
+    sampler = sampling(config_name="LHNN_ellipticpde", sampler_type="NUTS", initial_state=np.array([0]*50), num_samples=5000, burnin=1000, chains=1, epsilon=0.025, 
+             model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_ellipticpde_sin.weights.h5", threshold_nn=10, num_lf=20, threshold_lf=1000) 
+    sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/lhnn_nuts_ellipticpde.pkl"
 
     # sampler = sampling(config_name="LHNN_ellipticpde", sampler_type="NUTS", initial_state=np.array([0]*50), num_samples=5000, burnin=1000, chains=1, epsilon=0.025, 
     #          model_path=None, threshold_nn=10, num_lf=20, threshold_lf=1000) # traditional nuts.
@@ -167,9 +144,9 @@ if __name__ == "__main__":
     #          model_path="/home/ycui/Documents/TSRLproject_JPMorgan/models/LHNN_pmglmmB_sin.weights.h5")
     # sample_path = "/home/ycui/Documents/TSRLproject_JPMorgan/samples/lhnn_hmc_pmglmm_100.pkl"
 
-    # # Save the samples
-    # data_samples = {
-    #     name: getattr(sampler, name, None) for name in ["samples","numgrad", "monitor", "accept"]
-    # }
-    # with open(sample_path, "wb") as f:
-    #     pickle.dump(data_samples, f)
+    # Save the samples
+    data_samples = {
+        name: getattr(sampler, name, None) for name in ["samples","numgrad", "monitor", "accept"]
+    }
+    with open(sample_path, "wb") as f:
+        pickle.dump(data_samples, f)

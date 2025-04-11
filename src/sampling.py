@@ -6,8 +6,8 @@ import numpy as np
 import tensorflow as tf
 import pickle
 import sys
-# sys.path.insert(0, "/home/ycui/Documents/TSRLproject_JPMorgan/bins")
-import bins.probability.tensorflow_probability.python.mcmc as tfpmcmc
+sys.path.append("/home/ycui/Documents/TSRLproject_JPMorgan/custom_bins")
+import tensorflow_probability.python.mcmc as tfpmcmc
 
 def sampling(config_name, sampler_type, initial_state, num_samples, burnin, chains=1, epsilon=0.05, model_path=None, seed=0, sample_path=None, **kwargs):
     """
@@ -47,7 +47,7 @@ def sampling(config_name, sampler_type, initial_state, num_samples, burnin, chai
                 target_log_prob_fn=unnormalized_log_prob,
                 num_leapfrog_steps=3,
                 step_size=epsilon,
-                ),
+                model=model),
             num_adaptation_steps=int(burnin * 0.8))
         # sampler = tfpmcmc.HamiltonianMonteCarlo(initial_state=initial_state, num_samples=num_samples, burnin=burnin, chains=chains, epsilon=epsilon, hamiltonain_model=model, H_function=functions.functions(config["dist_name"]),seed=seed, **kwargs)
     # elif sampler_type == "NUTS":

@@ -207,6 +207,7 @@ class SimpleLeapfrogIntegrator(LeapfrogIntegrator):
     self._step_sizes = step_sizes
     self._num_steps = num_steps
     self._model = model
+    print("complete the initialization of leapfrog integrator.")
 
   @property
   def target_fn(self):

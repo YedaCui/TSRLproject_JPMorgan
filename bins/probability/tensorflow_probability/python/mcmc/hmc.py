@@ -19,6 +19,9 @@ import collections
 import tensorflow.compat.v1 as tf1
 import tensorflow.compat.v2 as tf
 
+import sys
+sys.path.append("/home/ycui/Documents/TSRLproject_JPMorgan/custom_bins")
+
 from tensorflow_probability.python.internal import distribute_lib
 from tensorflow_probability.python.internal import dtype_util
 from tensorflow_probability.python.internal import prefer_static as ps
@@ -605,6 +608,7 @@ class UncalibratedHamiltonianMonteCarlo(kernel_base.TransitionKernel):
     )
     self._momentum_dtype = None
     self._model = model
+    print("complete the init of hmc.")
 
   @property
   def target_log_prob_fn(self):
